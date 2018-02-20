@@ -1,129 +1,79 @@
 @extends('layouts.printlayout')
 
 @section('content')
+<style>
+@media print{@page {size: landscape}}
 
- <div align="" style="margin-left: 12px">
-      
-         <div class="md-card" >
-             <div   class="uk-grid" data-uk-grid-margin>
-               <div class="uk-grid-1-1 uk-container-center">
-                     @inject('sys', 'App\Http\Controllers\SystemController')
-                  <?php for ($i = 1; $i <= 1; $i++) {?>
+</style>
 
-  <table   border="0">
-        <tr>
-          <td   style="border:dashed; text-align: left;"><table width="738" height="451" border="0" cellspacing="1">
-            <tr>
-              <td colspan="4">
-                  <table   border="0">
-                    <tr>
-                      <td width="10">&nbsp;</td>
-                      <td width="722"><div align="center" >
-                        <div  class=" uk-margin-bottom-remove" >
-                            
-                            <img src='{{url("public/assets/img/logo.png")}}' style="width:100px;height: auto"/>
-                            <h3>Takoradi Polytechnic - Finance Office</h3></div>
-                        <span class="uk-text-bold uk-margin-top-remove">{!! $transaction->FEE_TYPE !!}  Receipt
-                          </span>
-                              <P></P>
-                              <span class="uk-text-bold">Total Academic year fees GHC{!!  @$student->BILLS!!}</span>
-                         
-                      </div>
-                      <div align="center"></div></td>
-                    </tr>
-                    </table>
-              </td>
-            </tr>
-            <tr>
-              <td colspan="4"><table width="769" border="0">
-                <tr>
-                  <td><table width="758" border="0">
-                    <tr>
-                      <td width="103"><div align="right"><strong>
-                                                Date:</strong></div></td>
-                      <td width="281" >  {!! date('D, d/m/Y, g:i a',strtotime(@$transaction->TRANSDATE))  !!}&nbsp;</td>
-                      <td width="172"><div align="right"><strong>Receipt No.</strong></div></td>
-                      <td width="184" >{!!  @$transaction->RECEIPTNO; !!}&nbsp;</td>
-                      </tr>
-                    <tr>
-                        <td align="right"><strong>Programme:</strong></td>
-                      <td>{!! @$sys->getProgram(@$student->PROGRAMMECODE )!!}</td>
-                      <td><div align="right"><strong>Year:</strong></div></td>
-                      <td >{!! @$student->YEAR !!}</td>
-                      </tr>
-                  </table></td>
-                </tr>
-              </table></td>
-              </tr>
-               <tr>
-              <td width="164"><strong>Index Number</strong></td>
-              <td width="602" colspan="3" style=" border-bottom-style:dotted"><strong>{!!@$student->INDEXNO !!}</strong></td>
-            </tr>
-            <tr>
-              <td width="164"><strong>Name</strong></td>
-              <td width="602" colspan="3" style=" border-bottom-style:dotted"><strong>{!!@$student->NAME !!}</strong></td>
-            </tr>
-            <tr>
-            </tr>
-            <tr>
-              <td><strong>Bank Paid to</strong></td>
-              <td colspan="3" style=" border-bottom-style:dotted"><strong>{!! @$transaction->bank->NAME!!}</strong></td>
-            </tr>
-             
-            <tr>
-              <td><strong>Amount Paid</strong></td>
-              <td colspan="3" style=" border-bottom-style:dotted"><strong>GHC{!! @$transaction->AMOUNT!!}.00</strong>&nbsp;(<span > {!! $words !!}</span> )</td>
-            </tr>
-             <tr>
-              <td><strong>Balance</strong></td>
-              <td colspan="3" style=" border-bottom-style:dotted"><strong>GHC{!! @$student->BILL_OWING!!}.00</strong>&nbsp;</td>
-            </tr>
-            <tr>
-                
-           
-            <tr>
-                
-            </tr>
-            <tr>
-              <td colspan="4" align="center">&nbsp;
-                <div style="width:90%">Goto portal.tpolyonline.com to do your semester registration thanks</div></td>
-            </tr>
-            <tr>
-                <td colspan="4" align="center">&nbsp;
-                     <center> <div class="visible-print text-center" align='center'>
-                                 {!! QrCode::size(100)->generate(Request::url()); !!} 
+    <div align="" style="margin-left: 12px">
+ 
+                    @inject('sys', 'App\Http\Controllers\SystemController')
+                    <?php for ($i = 1; $i <= 1; $i++) {?>
 
-                                </div>
-                               </center>
-                </td>
-            </tr><?php  \Session::forget('students');?>
-          </table></td>
-        </tr>
-      </table>
-                    
+                    <table  width="1000"   border="0" cellspacing="1">
+                                    <tr>
+                                         
+                                                    <td>  <img src='{{url("public/assets/img/logo.PNG")}}' style="width:70px;height: auto;margin-top:-48px; margin-left:80px"/>
+                                                              
+ 
+                                                              </td>
+                                                    <td style="text-align:center;text-transform:uppercase;margin-left:20px" class="uk-text-upper"> 
+                                                             
 
- <?php }
-?>
+                                                                <p>Asamankese Senior High School  <br/>
+                                                               Asamankese,E/R <br/>
+                                                                 Tel, +23348383838 <br/> &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; <span   class="uk-text-success">OFFICIAL RECEIPTS</span>
+                                                  
+                                                                 </p>
+                                                                <h4 class="uk-text-success"> Accounts Office</h4>
+                                                                
+                                                                <hr>
+                                                    </td>
 
-                 
+                                                            
+                                                
+                                     </tr>
+                                     
+                                      
+                                          
+
+                     </table>
+                     <p> <span class="uk-text-bold">TOTAL ACADEMIC YEAR SCHOOL FEES:   GHC{!!  @$student->termBill!!}</span>
+                         &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;&nbsp; &nbsp;&nbsp; &nbsp;&nbsp; &nbsp;&nbsp; &nbsp;&nbsp; &nbsp;&nbsp; &nbsp;&nbsp; &nbsp;&nbsp; &nbsp;&nbsp; &nbsp;
+                      <span class="uk-text-bold">RECEIPT NO:   {!!  @$transaction->receiptno; !!}</span>
+                         &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;&nbsp; &nbsp;&nbsp; &nbsp;&nbsp; &nbsp;&nbsp; &nbsp;
+                         &nbsp; &nbsp;&nbsp; &nbsp;&nbsp; &nbsp;&nbsp; &nbsp;
+                         <span class="uk-text-bold uk-text-upper">DATE:  {!! date("F j, Y, g:i a",strtotime(@$transaction->dates))  !!}</span>
+                     </p>
+
+                    <p class="uk-text-bold uk-text-upper">RECEIVED FROM : {!!ucwords(@$student->name) !!}</p>
+                    <p class="uk-text-bold uk-text-upper">THE SUM OF :   GHC {!! @$transaction->paid!!}  &nbsp;(<span > {!! $words !!}</span> )</p>
+                    <p class="uk-text-bold uk-text-upper">PAYMENT OF FEES FOR :   {!! ucwords($transaction->type)!!} fees FOR {!! @$student->currentClass !!}  </p>
+
+                    <p class="uk-text-bold uk-text-upper">RECEIVED BY : {!! ucwords(@$transaction->staff->name)!!}</p>
+
+
+
+
+                    <?php }
+                    ?>
+
+
                 </div>
 
-         </div>
-     </div>
- 
- </div>
-  
         
- @endsection
- 
-@section('js')
- <script type="text/javascript">
-  
-$(document).ready(function(){
-window.print();
-//window.close();
-});
 
-</script>
-  
+@endsection
+
+@section('js')
+    <script type="text/javascript">
+
+        $(document).ready(function(){
+           // window.print();
+//window.close();
+        });
+
+    </script>
+
 @endsection

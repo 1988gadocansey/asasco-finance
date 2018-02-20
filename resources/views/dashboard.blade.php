@@ -91,7 +91,7 @@
             <div>
                 <div class="md-card md-card-hover md-card-overlay">
                     <div class="md-card-content">
-                        <a  href='{{url("/upload/marks")}}'>  <img src="{{url('public/assets/img/dashboard/results.png')}}"/></a>
+                        <a  href='{{url("/pay/fees")}}'>  <img src="{{url('public/assets/img/dashboard/results.png')}}"/></a>
                     </div>
                     <div class="md-card-overlay-content">
                         <div class="uk-clearfix md-card-overlay-header">

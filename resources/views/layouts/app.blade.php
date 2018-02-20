@@ -201,8 +201,8 @@
                     <a href="#"><i class="sidebar-menu-icon material-icons md-18">book</i><span>Students</span></a>
                     <div class="uk-dropdown uk-dropdown-scrollable">
                         <ul class="uk-nav uk-nav-dropdown">
-                            <li><a href='{!! url("/course_registration") !!}'>View Students</a></li>
-                            <li><a href='{!! url("registeredCourses") !!}'>View Registered Courses</a></li>
+                            <li><a href='{!! url("/students") !!}'>View Students</a></li>
+
                          </ul>
                     </div>
                 </li>
@@ -211,7 +211,7 @@
                     <a href="#"><i class="sidebar-menu-icon material-icons md-18">work</i><span>Finances</span></a>
                     <div class="uk-dropdown uk-dropdown-scrollable">
                         <ul class="uk-nav uk-nav-dropdown">
-                            <li><a href='{!! url("/course_registration") !!}'>Pay Fees</a></li>
+                            <li><a href='{!! url("/pay/fees") !!}'>Pay Fees</a></li>
                             <li><a href='{!! url("/statement_account") !!}'>View Students owing</a></li>
                             <li><a href='{!! url("/statement_account") !!}'>View Students Paid</a></li>
                             <li><a href='{!! url("/statement_account") !!}'>Print Receipts</a></li>
@@ -286,7 +286,7 @@
         </div>
     </div><!-- common functions -->
      <br/>
-            <div class="footer uk-text-small"><center><?php date("Y");?> All Rights Reserved | Takoradi Technical University - Powered by Tpconnect </center></div>
+            <div class="footer uk-text-small"><center><?php date("Y");?> All Rights Reserved | Asamankese SHS - Powered by Gad Ocansey +233243348522 </center></div>
 
     <script src="{!! url('public/assets/js/common.min.js') !!}"></script>
     <script src="{!! url('public/assets/js/dropify.min.js') !!}"></script>

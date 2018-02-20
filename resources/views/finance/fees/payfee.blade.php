@@ -36,9 +36,9 @@
  <div class="uk-width-small-1-2">
      <div class="md-card">
          <div class="md-card-content" style="height: 300px;">
-             <h5 >Search student  by Name or Index Number or Admission Number here</h5>
+             <h5 >Search student  by Name or Index Number  here</h5>
             
-             <form method="POST" action=""  accept-charset="utf-8"  name="applicationForm"  v-form>
+             <form method="POST" action="{{url('/pay_fees')}}"  accept-charset="utf-8"  name="applicationForm"  v-form>
                   <input type="hidden" name="_token" value="{!! csrf_token() !!}"> 
              <div class="uk-grid" data-uk-grid-margin>
                  

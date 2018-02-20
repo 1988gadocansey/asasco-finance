@@ -36,29 +36,12 @@ Route::group(['middleware' => ['web']], function () {
 
     Route::match(array("get", "post"),'/course_registration','CourseController@register');
 
-    Route::get('/printOut/{student}', 'CourseController@printRegistration');
-    Route::get('/registeredCourses', 'CourseController@registeredCourses');
-    Route::get('/statement_account', 'HomeController@accountStatement');
+    Route::get('/pay/fees', 'FeeController@showPayform');
+    Route::post('/pay_fees', 'FeeController@showStudent');
+    Route::post('/processPayment', 'FeeController@processPayment');
 
-    Route::get( '/result/transcript/provisonal', "CourseController@transcript");
-
-    Route::get('/liaison/form/attachment', 'LiaisonController@showForm');
-    Route::post('/liaison_attachment', 'LiaisonController@processForm');
-    Route::get('/liaison/form/attachment/print', 'LiaisonController@printAttachmentForm');
-
-
-    Route::get('/liaison/form/assumption', 'LiaisonAssumptionController@showForm');
-    Route::post('/liaison_assumption', 'LiaisonAssumptionController@processForm');
-    Route::get('/liaison/form/assumption/print', 'LiaisonAssumptionController@printAttachmentForm');
-
-    Route::get('lecturer_course', 'QualityAssuranceController@getCourse');
-    Route::get('lecturer/assessment', 'QualityAssuranceController@showForm');
-    Route::post('lecturer_assessment', 'QualityAssuranceController@processStep1');
-    Route::get('lecturer/assessment/print', 'QualityAssuranceController@printForm');
-    Route::get('lecturer/assessment/wizzad', 'QualityAssuranceController@showFormWizzard');
-    Route::post('lecturer_assessment_wizard', 'QualityAssuranceController@processForm');
-    Route::delete('/lecturer_delete', 'QualityAssuranceController@destroy');
-
+    Route::get('/printreceipt/{receiptno}', 'FeeController@printreceipt');
+    Route::get('search/autocomplete', 'SearchController@autocomplete');
 
 //
 

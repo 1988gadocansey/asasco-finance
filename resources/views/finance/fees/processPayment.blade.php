@@ -32,7 +32,7 @@
      <h4 class="heading_b uk-margin-bottom">Fee Payments Section</h4>
   
      <h4 class="uk-text-bold uk-text-danger">Allow pop ups on your browser please!!!!!</h4>
-     <p class="uk-text-primary uk-text-bold uk-text-small">Hotlines 0505284060 (Gad), 0246091283(Kojo),0276363053(Timo)</p>
+
   <h5 > Fee Payment  for {!! $sem !!} Semester  | {!! $year !!} Academic Year</h5>
              <hr>
              
@@ -46,15 +46,18 @@
                         <div class="md-card-content">
                             <div class="uk-overflow-container">
                                 <table>
+                                    @if($sem==3)
                                     <tr>
-                                            <td  align=""> <div  align="right" class="uk-text-success">Update Level/Year</div></td>
+                                            <td  align=""> <div  align="right" class="uk-text-success">Promote or Demote to class</div></td>
                                         <td>
                                           
-                                              {!!  Form::select('level', array('400/1'=>'BTECH level 1','400/2'=>'BTECH level 2','1'=>'1st years','2' => '2nd years', '3' => '3rd years','4' => '4th years'), null, ['placeholder' => 'select level','required'=>'','class'=>'md-input parent','v-model'=>'level','v-form-ctrl'=>'','v-select'=>''],old("level","")); !!}
-                                              <p class="uk-text-danger uk-text-small"  v-if="applicationForm.level.$error.required" >Level is required</p>
+                                             {!! Form::select('class', $class, old("class",""), ['class' => 'md-input parents' ,'placeholder' => 'Select class']);!!}
+
+                                            <p class="uk-text-danger uk-text-small"  v-if="applicationForm.level.$error.required" >Level is required</p>
 
                                         </td>
                                         </tr>
+                                    @endif
                                          
                                          <tr>
                                             <td  align=""> <div  align="right" class="uk-text-success">Amount Paying GHC</div></td>
@@ -86,6 +89,15 @@
                                             
                                         </td>
                                         </tr>
+                                    <tr>
+                                        <td  align=""> <div  align="right" class=" ">Fees Type</div></td>
+                                        <td>
+
+                                            {!!   Form::select('type', ['All' => 'Total Fees','Academic'=>'Academic Facility User Fees', 'PTA' => 'PTA','Boarding' => 'Boarding' ], null, ['class' => 'md-input ','required'=>'','id'=>"type",'v-model'=>'type','v-form-ctrl'=>'','v-select'=>'','placeholder' => 'select fee type']);!!}
+                                            <p class="uk-text-danger uk-text-small"  v-if="applicationForm.type.$error.required" >Fee type  is required</p>
+
+                                        </td>
+                                    </tr>
                                          <tr>
                                             <td  align=""> <div  align="right" >Date of Payment at bank</div></td>
                                         <td>
@@ -101,7 +113,7 @@
                                             <td  align=""> <div  align="right" class=" ">Bank Account</div></td>
                                         <td>
                                            {!! Form::select('bank', 
-                                            (['' => 'Select bank account ']+$banks ), 
+                                            $banks  ,
                                                 null, 
                                                 ['required'=>'','class' => 'md-input','v-model'=>'bank','v-form-ctrl'=>'','v-select'=>''] )  !!}
 
@@ -110,16 +122,16 @@
 
                                         </td>
                                         </tr>
-                                          
+
                                         <tr>
-                                            <td  align=""> <div  align="right" class=" ">Payment Type</div></td>
+                                            <td  align=""> <div  align="right" class=" ">Payment Mode</div></td>
                                         <td>
                                             <select name="payment_detail" required="" class="md-input" v-form-ctrl='' v-model='payment_detail' v-select=''>
                                                 <option>Select payment type</option>
-                                                <option value="PAY IN SLIP">PAY IN SLIP</option>
+                                                <option value="Cash">Cash</option>
                                                  
                                                 <option value="Bursery">Bursery</option>
-                                                <option value="Receipt">Receipt</option>
+                                                <option value="Overdraft">Overdraft</option>
                                                 <option value="Scholarship">Scholarship</option>
                                             </select>
                                              <p class="uk-text-danger uk-text-small"  v-if="applicationForm.payment_detail.$error.required" >Payment type is required</p>
@@ -155,81 +167,101 @@
                                         <td>
                                             {{ $receipt}}
                                             <input type="hidden" name="receipt"   value="{{ $receipt}}" />
-                                            <input type="hidden" name="stno"   value="{{ $data[0]->STNO}}" />
-                                            
+
                                         </td>
                                         </tr>
-                                             @if($data[0]->YEAR==1 ||$data[0]->YEAR=='400/1' )
-                                        <tr>
-                                            <td  align=""> <div  align="right" >Admission Number</div></td>
-                                        <td>
-                                            {{ $data[0]->STNO}}
-                                             <input type="hidden" name="student" id="student" value="{{ $data[0]->STNO}}" />
-                                            
-                                        </td>
-                                        </tr>
-                                         @else
+
                                           <tr>
                                             <td  align=""> <div  align="right" >Index Number</div></td>
                                         <td>
-                                            {{ $data[0]->INDEXNO}}
-                                             <input type="hidden" name="student" id="student" value="{{ $data[0]->INDEXNO}}" />
+                                            {{ $data[0]->indexNo}}
+                                             <input type="hidden" name="student" id="student" value="{{ $data[0]->indexNo}}" />
                                             
                                         </td>
                                         </tr>
-                                        @endif
+
                                         <tr>
                                             <td  align=""> <div  align="right" >Full Name</div></td>
                                         <td>
-                                            {{ $data[0]->NAME}}
+                                            {{ $data[0]->name}}
                                             
                                         </td>
                                         </tr>
                                         <tr>
-                                            <td  align=""> <div  align="right" >Level</div></td>
+                                            <td  align=""> <div  align="right" >Current Class</div></td>
                                         <td>
-                                            {{ $data[0]->LEVEL}}
-                                              
+                                            {{ $data[0]->currentClass}}
+                                            <input type="hidden" name="currentClass"  value="{{ $data[0]->currentClass}}" />
                                         </td>
                                         </tr>
                                         <tr>
                                             <td  align=""> <div  align="right" >Programme</div></td>
                                         <td>
-                                            {{ @$sys->getProgram($data[0]->PROGRAMMECODE)}}
-                                             <input type="hidden" name="programme"  value="{{ $data[0]->PROGRAMMECODE}}" />
+                                            {{ @$sys->getProgram($data[0]->programme)}}
+                                             <input type="hidden" name="programme"  value="{{ $data[0]->code}}" />
                                            
                                         </td>
                                         </tr>
-                                       
-                                        <tr>
-                                            <td  align=""> <div  align="right" class="uk-text-danger">SCHOOL FEES</div></td>
-                                        <td>
-                                          GHC  {{ $data[0]->BILLS}}
-                                            <input type="hidden" id="bill" onkeyup="recalculateSum();" name="bill" value="{{$data[0]->BILL_OWING}}"/>
-                                      
-                                        </td>
-                                        </tr>
-                                          
-                                         
-                                         <tr>
-                                            <td  align=""> <div  align="right" class="uk-text-primary">ACCUMULATED FEES OWING </div></td>
-                                        <td>
-                                          GHC  {{  $data[0]->BILL_OWING}}
-                                            </td>
-                                        </tr>
-                                         <tr>
-                                            <td align=""> <div  align="right" class="uk-text-success">Phone N<u>o</u></div></td>
-                                        <td>
-                                          
-                                            <input type="text" class="md-input" maxlength="10" min="10"  name="phone" value="{{$data[0]->TELEPHONENO}}"/>
-                                      
-                                        </td>
-                                        </tr>
+
+
+                                            <tr>
+                                                <td  align=""> <div  align="right" class="uk-text-danger">Term Bills:</div></td>
+                                                <td class="uk-text-bold">
+                                                    GHS  {{ $data[0]->termBill}}
+
+                                                </td>
+                                            </tr>
+
+
+
+
+                                            <tr>
+                                                <td  align=""> <div  align="right" class="uk-text-primary">Academic Owings: </div></td>
+                                                <td class="uk-text-bold">
+                                                    GHS  {{  $data[0]->academicBillOwing}}
+                                                    <input type="hidden" id="academic" onkeyup="recalculateSum();" name="academic" value="{{$data[0]->academicBillOwing}}"/>
+
+                                                </td>
+                                            </tr>
+                                            <tr>
+                                                <td  align=""> <div  align="right" class="uk-text-primary">PTA Owings: </div></td>
+                                                <td class="uk-text-bold">
+                                                    GHS  {{  $data[0]->ptaOwing}}
+                                                    <input type="hidden" id="pta" onkeyup="recalculateSum();" name="pta" value="{{$data[0]->ptaOwing}}"/>
+
+                                                </td>
+                                            </tr>
+                                            @if($data[0]->studentType=="BOARDING")
+                                                <tr>
+                                                    <td  align=""> <div  align="right" class="uk-text-primary">Boarding Owings: </div></td>
+                                                    <td class="uk-text-bold">
+                                                        GHS  {{  $data[0]->boardingOwing}}
+                                                        <input type="hidden" id="boarding" onkeyup="recalculateSum();" name="boarding" value="{{$data[0]->boardingOwing}}"/>
+
+                                                    </td>
+                                                </tr>
+                                            @endif
+                                            <tr>
+                                                <td  align=""> <div  align="right" class="uk-text-danger">Accumulated Owings b/f:</div></td>
+                                                <td class="uk-text-bold">
+                                                    GHS  {{ $data[0]->totalOwing}}
+                                                    <input type="hidden" id="bill" onkeyup="recalculateSum();" name="total" value="{{$data[0]->totalOwing}}"/>
+
+                                                </td>
+                                            </tr>
+                                            <tr>
+                                                <td align="" class="uk-text-bold"> <div  align="right" class="uk-text-success">Guardian Phone N<u>o</u>:</div></td>
+                                                <td>
+
+                                                    <input type="text" class="md-input" maxlength="10" min="10"  name="phone" value="{{$data[0]->parentPhone}}"/>
+
+                                                </td>
+                                            </tr>
                                         </table>
                                     </td>
                                     <td valign="top">
                                         <img   style="width:150px;height: auto;"  <?php
-                                        $pic = $data[0]->INDEXNO;
+                                        $pic = $data[0]->indexNo;
                                         echo $sys->picture("{!! url(\"public/albums/students/$pic.jpg\") !!}", 90)
                                         ?>   src='{{url("public/albums/students/$pic.jpg")}}' alt="  Affix student picture here"    />
                                     </td>

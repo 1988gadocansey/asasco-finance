@@ -101,7 +101,7 @@
     <!-- filters here -->
     @inject('fee', 'App\Http\Controllers\FeeController')
     @inject('sys', 'App\Http\Controllers\SystemController')
-    {{--<div class="uk-width-xLarge-1-1">
+   <div class="uk-width-xLarge-1-1">
         <div class="md-card">
             <div class="md-card-content">
 
@@ -111,113 +111,79 @@
 
                         <div class="uk-width-medium-1-5">
                             <div class="uk-margin-small-top">
-                                {!! Form::select('program',
-                                (['' => 'All programs'] + $programme ),
-                                old("program",""),
-                                ['class' => 'md-input parent','id'=>"parent",'placeholder'=>'select program'] )  !!}
+
+                                {!! Form::select('program', $programme, old("program",""), ['class' => 'md-input parent','id'=>"parent",'placeholder' => 'select programme']);!!}
                             </div>
                         </div>
                         <div class="uk-width-medium-1-5">
                             <div class="uk-margin-small-top">
-                                {!! Form::select('class',
-                                (['' => 'All Classes'] + $class ),
-                                old("class",""),
-                                ['class' => 'md-input parent','id'=>"parent",'placeholder'=>'select class'] )  !!}
+
+                                {!! Form::select('class', $class, old("class",""), ['class' => 'md-input parent','id'=>"parent",'placeholder' => 'All Classes']);!!}
 
                             </div>
                         </div>
                         <div class="uk-width-medium-1-5">
                             <div class="uk-margin-small-top">
 
-                                {!!  Form::select('gender', array('Male'=>'Male','Female' => 'Female'), null, ['placeholder' => 'select gender','id'=>'parent','class'=>'md-input parent'],old("level","")); !!}
-
+                               {!!   Form::select('gender', ['Male' => 'Male', 'Female' => 'Female'], null, ['class' => 'md-input parent','id'=>"parent",'placeholder' => 'select gender']);!!}
                             </div>
                         </div>
+
 
 
                         <div class="uk-width-medium-1-5">
                             <div class="uk-margin-small-top">
-                                {!! Form::select('department',
-                                (['' => 'departments'] +$department  ),
-                                old("department",""),
-                                ['class' => 'md-input parent','id'=>"parent"] )  !!}
-                            </div>
-                        </div>
 
-                        <div class="uk-width-medium-1-5">
-                            <div class="uk-margin-small-top">
+                                {!! Form::select('house', $house, old("house",""), ['class' => 'md-input parent','id'=>"parent",'placeholder' => 'All houses']);!!}
 
-                                {!!  Form::select('status', array('Admitted'=>'Admitted','In School'=>'In school','Alumni' => 'Completed','Deferred' => 'Deferred','Dead' => 'Dead','Rasticated' => 'Rasticated'), null, ['placeholder' => 'select status of student','id'=>'parent','class'=>'md-input parent'],old("level","")); !!}
-
-                            </div>
-                        </div>
-                        @if( @\Auth::user()->department=='top')
-                       <div class="uk-width-medium-1-5">
-                            <div class="uk-margin-small-top">
-                                {!! Form::select('house',
-                                (['' => 'by houses'] +$house  ),
-                                old("house",""),
-                                ['class' => 'md-input parent','id'=>"parent"] )  !!}
                             </div>
                         </div>
                         <div class="uk-width-medium-1-5">
                             <div class="uk-margin-small-top">
-                                {!! Form::select('nationality',
-                                (['' => 'Nationality'] +$nationality  ),
-                                old("nationality",""),
-                                ['class' => 'md-input parent','id'=>"parent"] )  !!}
+
+                                 {!!   Form::select('status', ['Admitted' => 'Admitted', 'In School' => 'In School','Alumni' => 'Completed','Deferred' => 'Deferred','Dead' => 'Dead','Rasticated' => 'Rasticated'], null, ['class' => 'md-input parent','id'=>"parent",'placeholder' => 'select status']);!!}
+
+                            </div>
+                        </div>
+
+
+
+
+
+
+
+
+                        <div class="uk-width-medium-1-5">
+                            <div class="uk-margin-small-top">
+                                       {!!   Form::select('type', ['Boarding' => 'Boarders', 'Day' => 'Day' ], null, ['class' => 'md-input parent','id'=>"parent",'placeholder' => 'select residence status']);!!}
+
+
+
                             </div>
                         </div>
 
                         <div class="uk-width-medium-1-5">
                             <div class="uk-margin-small-top">
-                                {!! Form::select('region',
-                                (['' => 'Search by Regions'] +$region  ),
-                                old("region",""),
-                                ['class' => 'md-input parent','id'=>"parent"] )  !!}
-                            </div>
-                        </div>
-                        @if(@\Auth::user()->role!='FO')
-                        <div class="uk-width-medium-1-5">
-                            <div class="uk-margin-small-top">
-                                {!! Form::select('religion',
-                                (['' => 'Search by Religions'] +$religion  ),
-                                old("religion",""),
-                                ['class' => 'md-input parent','id'=>"parent"] )  !!}
-                            </div>
-                        </div>
-                        @endif
-                        @endif
-                        <div class="uk-width-medium-1-5">
-                            <div class="uk-margin-small-top">
-                                {!! Form::select('group',
-                                (['' => 'by graduating group'] +$year  ),
-                                old("group",""),
-                                ['class' => 'md-input parent','id'=>"parent"] )  !!}
-                            </div>
-                        </div>
-                        <div class="uk-width-medium-1-5">
-                            <div class="uk-margin-small-top">
-                                           {!!  Form::select('type', array('Boarding'=>'Boarders','Day'=>'Day' ), null, ['placeholder' => 'select type of student','id'=>'parent','class'=>'md-input parent'],old("level","")); !!}
+
+
+                                {!!   Form::select('fee', ['1' => 'Fee Owing', '0' => 'Paid all' ], null, ['class' => 'md-input parent','id'=>"parent",'placeholder' => 'Select fee status']);!!}
+
 
 
                             </div>
                         </div>
-                         @if( @\Auth::user()->department=='top' ||@\Auth::user()->role=='FO')
                         <div class="uk-width-medium-1-5">
                             <div class="uk-margin-small-top">
 
-                                {!!  Form::select('fee', array('1'=>'Fee Owing','0' => 'Paid all'), null, ['placeholder' => 'Select fee status','id'=>'parent','class'=>'md-input parent'],old("action","")); !!}
+
+
+                                {!!  Form::select('by', ['indexNo'=>'Search by Index Number','NAME'=>'Search by Name' ], null, ['placeholder' => 'select search type','class'=>'md-input'] ); !!}
+
 
                             </div>
                         </div>
-                         @endif
-                        <div class="uk-width-medium-1-5">
-                            <div class="uk-margin-small-top">
 
-                                {!!  Form::select('by', array('indexNo'=>'Search by Index Number','name'=>'Search by Name','required'=>''), null, ['placeholder' => 'select search type','class'=>'md-input'], old("","")); !!}
-                            </div>
-                        </div>
+
 
                         <div class="uk-width-medium-1-5">
                             <div class="uk-margin-small-top">
@@ -226,19 +192,18 @@
                         </div>
 
 
-
+                        <div class="uk-width-medium-1-5">
+                            <div class="uk-margin-small-top">
+                            <button class="md-btn  md-btn-small md-btn-success uk-margin-small-top" type="submit"><i class="material-icons">search</i></button>
+                        </div>
+                        </div>
 
                     </div>
-                    <center>   <div class="uk-width-medium-1-10" style=" ">
-                            <div class="uk-margin-small-top">
 
-                                <button class="md-btn  md-btn-small md-btn-success uk-margin-small-top" type="submit"><i class="material-icons">search</i></button>
-                            </div>
-                        </div></center>
                 </form>
             </div>
         </div>
-    </div>--}}
+    </div>
 
     <!-- end filters -->
     <div class="uk-width-xLarge-1-1">

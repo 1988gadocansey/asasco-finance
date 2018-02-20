@@ -13,7 +13,7 @@ class ReceiptModel extends Model
      *
      * @var string
      */
-    protected $table = 'tpoly_receipt_gen';
+    protected $table = 'receiptno';
     
     protected $primaryKey="id";
     protected $guarded = ['id'];
