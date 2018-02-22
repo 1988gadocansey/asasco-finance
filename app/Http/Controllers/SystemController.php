@@ -443,8 +443,8 @@ class SystemController extends Controller
 //                ->pluck('name', 'code');
 //         return $program;
 //        }
-          $program = \DB::table('programme')->orderby("name")
-                ->pluck('name', 'code');
+          $program = \DB::table('programme_new')->orderby("name")
+                ->pluck('name', 'name');
          return $program;
     }
     public function interest() {

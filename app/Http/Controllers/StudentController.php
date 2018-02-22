@@ -23,7 +23,7 @@ class StudentController extends Controller
     public function index(Request $request, SystemController $sys) {
          
 //          if($request->user()->isSupperAdmin || @\Auth::user()->role=="FO" || @\Auth::user()->department=="Finance" ||    @\Auth::user()->department=="top"){
-        $student = StudentModel::query();         if ($request->has('program') && trim($request->input('program')) != "") {
+        /*$student = StudentModel::query();         if ($request->has('program') && trim($request->input('program')) != "") {
             $student->where("programme", $request->input("program", ""));
         }
         if ($request->has('class') && trim($request->input('class')) != "") {
@@ -77,9 +77,58 @@ class StudentController extends Controller
                         ->with('class', $sys->getClassList())
                         ->with('house', $sys->getHouseList())
                         ->with('programme', $sys->getProgramList())
-                      ;
-        
-        
+                      ;*/
+
+
+        $student = Models\RegistrationCard::query();
+        if ($request->has('program') && trim($request->input('program')) != "") {
+            $student->where("Academic_Programme", $request->input("program", ""));
+        }
+        if ($request->has('class') && trim($request->input('class')) != "") {
+            $student->where("Currently_In_Class", $request->input("class", ""));
+        }
+        if ($request->has('status') && trim($request->input('status')) != "") {
+            $student->where("Current_Status", $request->input("status", ""));
+        }
+        if ($request->has('type') && trim($request->input('type')) != "") {
+            $student->where("Boarder", $request->input("type", ""));
+        }
+
+
+
+        if ($request->has('gender') && trim($request->input('gender')) != "") {
+            $student->where("gender", $request->input("gender", ""));
+        }
+
+
+
+
+        if ($request->has('search') && trim($request->input('search')) != "" && trim($request->input('by')) != "") {
+            // dd($request);
+            $student->where('Surname', "LIKE", "%" . $request->input("search", "") . "%")
+                ->orWhere("Registration_No","LIKE", "%" . $request->input("search", "") . "%")
+                ->orWhere("First_Name","LIKE", "%" . $request->input("search", "") . "%");
+            ;
+        }
+        $data = $student->orderBy('Surname')->orderBy('Currently_In_Class')->orderBy('Boarder')->paginate(100);
+
+        $request->flashExcept("_token");
+
+        \Session::put('students', $data);
+        return view('students.index')->with("data", $data)
+            ->with('year', $sys->years())
+            ->with('nationality', $sys->getCountry())
+
+            ->with('religion', $sys->getReligion())
+            ->with('region', $sys->getRegions())
+            ->with('department', $sys->getDepartmentList())
+            ->with('class', $sys->getClassList())
+            ->with('house', $sys->getHouseList())
+            ->with('programme', $sys->getProgramList())
+            ;
+
+
+
     }
      public function sms(Request $request, SystemController $sys){
          ini_set('max_execution_time', 3000); //300 seconds = 5 minutes

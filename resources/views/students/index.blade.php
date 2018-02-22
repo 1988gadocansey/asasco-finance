@@ -118,10 +118,12 @@
                         <div class="uk-width-medium-1-5">
                             <div class="uk-margin-small-top">
 
-                                {!! Form::select('class', $class, old("class",""), ['class' => 'md-input parent','id'=>"parent",'placeholder' => 'All Classes']);!!}
+                                {!!   Form::select('class', [  'SHS 1' => 'SHS1','SHS2' => 'SHS 2','SHS 3' => 'SHS3'], null, ['class' => 'md-input parent','id'=>"parent",'placeholder' => 'select class']);!!}
 
                             </div>
                         </div>
+
+
                         <div class="uk-width-medium-1-5">
                             <div class="uk-margin-small-top">
 
@@ -131,26 +133,14 @@
 
 
 
+
                         <div class="uk-width-medium-1-5">
                             <div class="uk-margin-small-top">
 
-                                {!! Form::select('house', $house, old("house",""), ['class' => 'md-input parent','id'=>"parent",'placeholder' => 'All houses']);!!}
+                                 {!!   Form::select('status', [  'ACTIVE' => 'In School','COMPLETED' => 'Completed','PASSIVE' => 'PASSIVE','Dead' => 'Dead','Rasticated' => 'Rasticated'], null, ['class' => 'md-input parent','id'=>"parent",'placeholder' => 'select status']);!!}
 
                             </div>
                         </div>
-                        <div class="uk-width-medium-1-5">
-                            <div class="uk-margin-small-top">
-
-                                 {!!   Form::select('status', ['Admitted' => 'Admitted', 'In School' => 'In School','Alumni' => 'Completed','Deferred' => 'Deferred','Dead' => 'Dead','Rasticated' => 'Rasticated'], null, ['class' => 'md-input parent','id'=>"parent",'placeholder' => 'select status']);!!}
-
-                            </div>
-                        </div>
-
-
-
-
-
-
 
 
                         <div class="uk-width-medium-1-5">
@@ -162,22 +152,13 @@
                             </div>
                         </div>
 
-                        <div class="uk-width-medium-1-5">
-                            <div class="uk-margin-small-top">
 
-
-                                {!!   Form::select('fee', ['1' => 'Fee Owing', '0' => 'Paid all' ], null, ['class' => 'md-input parent','id'=>"parent",'placeholder' => 'Select fee status']);!!}
-
-
-
-                            </div>
-                        </div>
                         <div class="uk-width-medium-1-5">
                             <div class="uk-margin-small-top">
 
 
 
-                                {!!  Form::select('by', ['indexNo'=>'Search by Index Number','NAME'=>'Search by Name' ], null, ['placeholder' => 'select search type','class'=>'md-input'] ); !!}
+                                {!!  Form::select('by', ['Registration_No'=>'Search by Index Number','Surname'=>'Search by Name' ], null, ['placeholder' => 'select search type','class'=>'md-input'] ); !!}
 
 
                             </div>
@@ -220,8 +201,8 @@
                             <th class="filter-false remove sorter-false">NO</th>
 
                             <th data-priority="6">NAME</th>
-                            <th>PHOTO</th>
-                            <th>INDEX N<u>O</u></th>
+
+                            <th>TRANSACTION CODE<u>O</u></th>
 
                             <th>PROGRAM</th>
 
@@ -229,17 +210,14 @@
 
 
                             <th>GENDER</th>
-
-
+                            <th>PARENT NAME</th>
                             <th>PARENT PHONE</th>
 
 
-                            <th>TERM BILLS</th>
-                            <th>PAID</th>
-                            <th>OWINGS</th>
 
 
-                            <th>YEAR GROUP</th>
+                            <th>RESIDENCE STATUS</th>
+
 
 
                             <th>STATUS</th>
@@ -252,24 +230,22 @@
 
                             <tr align="">
                                 <td> {{ $data->perPage()*($data->currentPage()-1)+($index+1) }} </td>
-                                <td> {{ strtoupper(@$row->name) }}</td>
-                                <td><img class=" " style="width:65px;height:70px"
-                                         src='{{url("public/albums/students/$row->indexNo.JPG")}} ' alt="photo"/></td>
-                                <td> {{ @$row->indexNo }}</td>
+                                <td> {{ strtoupper(@$row->First_Name.' '.$row->Other_Names.' '.$row->Surname) }}</td>
+                                   <td> {{ @$row->Registration_No }}</td>
 
-                                <td>{!! strtoupper(@$row->program->name) !!}</td>
-                                <td> {{ @$row->currentClass }}</td>
-                                <td> {{ strtoupper(@$row->gender) }}</td>
-
-                                <td> {{ @$row->parentPhone }}</td>
+                                <td>{!! strtoupper(@$row->Academic_Programme) !!}</td>
+                                <td> {{ @$row->Currently_In_Class }}</td>
+                                <td> {{ strtoupper(@$row->Gender) }}</td>
+                                <td> {{ strtoupper(@$row->parentdetails->Name_Of_Guardian) }}</td>
+                                <td> {{ strtoupper(@$row->parentdetails->id) }}</td>
 
 
-                                <td>GHC {{ @$row->termBill }}</td>
-                                <td>0.00</td>
-                                <td>GHC {{ @$row->totalOwing }}</td>
 
-                                <td> {{ strtoupper(@$row->yearGroup) }}</td>
-                                <td> {{ strtoupper(@$row->status) }}</td>
+                                <td>  {{ strtoupper(@$row->Boarder) }}</td>
+
+
+
+                                <td> {{ strtoupper(@$row->Current_Status) }}</td>
 
 
 
@@ -278,7 +254,7 @@
                         </tbody>
 
                     </table>
-
+                    {!! $data->links() !!}
                 </div>
             </div>
 

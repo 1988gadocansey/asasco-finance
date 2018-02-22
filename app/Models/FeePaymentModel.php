@@ -29,6 +29,9 @@ class FeePaymentModel extends Model
     public function staff(){
         return $this->belongsTo('App\Models\WorkerModel', "worker","emp_number");
     }
+    public function bankdetails(){
+        return $this->belongsTo('App\Models\BankModel', "bank","id");
+    }
 
 
 }

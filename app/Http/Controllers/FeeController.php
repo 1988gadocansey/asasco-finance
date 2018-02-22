@@ -70,11 +70,11 @@ class FeeController extends Controller
         $sys = new SystemController();
         $array = $sys->getSemYear();
         if ($term == "" && $yearr == "") {
-            $term = $array[0]->SEMESTER;
-            $yearr = $array[0]->YEAR;
+            $term = $array[0]->term;
+            $yearr = $array[0]->year;
         }
 
-        $fee = FeePaymentModel::query()->where('YEAR', '=', $yearr)->where('SEMESTER', $term)->where('INDEXNO', $student)->sum('AMOUNT');
+        $fee = FeePaymentModel::query()->where('year', '=', $yearr)->where('term', $term)->where('stuId', $student)->sum('paid');
         return $fee;
 
 
@@ -84,146 +84,56 @@ class FeeController extends Controller
     {
 
         $array = $sys->getSemYear();
-        $sem = $array[0]->SEMESTER;
-        $year = $array[0]->YEAR;
+        $sem = $array[0]->term;
+        $year = $array[0]->year;
         $fee = FeePaymentModel::query();
 
-        if ($request->has('level') && trim($request->input('level')) != "") {
-            $fee->where("LEVEL", $request->input("level", ""));
+        if ($request->has('class') && trim($request->input('class')) != "") {
+            $fee->where("classes", $request->input("class", ""));
         }
 
         if ($request->has('indexno') && trim($request->input('indexno')) != "") {
-            $fee->where("INDEXNO", '=', $request->input("indexno", ""));
+            $fee->where("stuId", '=', $request->input("indexno", ""));
         }
         if ($request->has('year') && trim($request->input('year')) != "") {
-            $fee->where("YEAR", "=", $request->input("year", ""));
-        }
-
-        if ($request->has('program') && trim($request->input('program'))) {
-            $fee->where("PROGRAMME", "=", $request->input('program'));
+            $fee->where("year", "=", $request->input("year", ""));
         }
 
 
         if ($request->has('type') && trim($request->input('type'))) {
-            $fee->where("PAYMENTTYPE", "=", $request->input('type'));
+            $fee->where("type", "=", $request->input('type'));
         }
-        $data = $fee->groupBy('INDEXNO')->orderBy('TRANSDATE', 'DESC')->paginate(10000);
+        if ($request->has('paytype') && trim($request->input('paytype'))) {
+            $fee->where("paymentType", "=", $request->input('type'));
+        }
+        $data = $fee->orderBy('created_at', 'DESC')->paginate(2);
 
         $request->flashExcept("_token");
         \Session::put('students', $data);
 
         foreach ($data as $key => $row) {
-            $a[] = $row->AMOUNT;
-            //$data[$key]->TOTALS = array_sum($a);
+            $a[] = $row->paid;
 
-            $t[] = $this->getTotalPayment($row->INDEXNO, $row->SEMESTER, $row->YEAR);
-            $data[$key]->TOTALS = @array_sum($t);
+            $t[] = $this->getTotalPayment($row->stuId, $row->term, $row->year);
+            $data[$key]->paid = @array_sum($t);
         }
 
-        $totals = @$sys->formatMoney($data[$key]->TOTALS);
-        return view('finance.fees.masterLedger')->with("data", $data)
+        $totals = @$sys->formatMoney($data[$key]->paid);
+        return view('finance.reports.masterLedger')->with("data", $data)
             ->with('program', $sys->getProgramList())
             ->with('year', $this->years())
             ->with('bank', $this->banks())
+            ->with('nationality', $sys->getCountry())
+
+            ->with('religion', $sys->getReligion())
+            ->with('region', $sys->getRegions())
+            ->with('department', $sys->getDepartmentList())
+            ->with('class', $sys->getClassList())
+            ->with('house', $sys->getHouseList())
             ->with('total', $totals);
 
     }
 
-    public function feeSummary(Request $request)
-    {
-        $sys = new SystemController();
-
-
-        if ($request->isMethod("get")) {
-
-            return view('finance.fees.fee_summary')
-                ->with('program', $sys->getProgramByIDList())
-                ->with('year', $this->years());
-
-        } else {
-
-            $fee = FeeModel::query()->where('STATUS', 'approved');
-
-            if ($request->has('level') && trim($request->input('level')) != "") {
-                $fee->where("LEVEL", $request->input("level", ""));
-            }
-            if ($request->has('program') && trim($request->input('program'))) {
-                $fee->where("PROGRAMME", "=", $request->input('program'));
-            }
-            if ($request->has('year') && trim($request->input('year')) != "") {
-                $fee->where("YEAR", "=", $request->input("year", ""));
-            }
-            $data = $fee->orderBy('PROGRAMME')->orderBy('YEAR')->paginate(100);
-            $data->setPath(url("fee_summary"));
-            $programm = $sys->getProgramByID($request->input('program'));
-            $yearr = $request->input('year');
-            $request->flashExcept("_token");
-            foreach ($data as $key => $row) {
-                $total[] = $row->AMOUNT;
-                $data[$key]->TOTALS = array_sum($total);
-
-            }
-            return view('finance.fees.fee_summary')->with('data', $data)
-                ->with('program', $sys->getProgramByIDList())
-                ->with('year', $this->years())
-                ->with('academicYear', $yearr)
-                ->with('programme', $programm)
-                ->with('level', $request->input("level", ""));
-
-
-        }
-    }
-
-    /*
-     * this controller method handles everything about students 
-     * who are owing and those who have paid
-     */
-    public function owingAndPaid(Request $request)
-    {
-        $student = StudentModel::query();
-        if ($request->has('search') && trim($request->input('search')) != "") {
-            // dd($request);
-            $student->where($request->input('by'), "LIKE", "%" . $request->input("search", "") . "%");
-        }
-        if ($request->has('program') && trim($request->input('program')) != "") {
-            $student->where("PROGRAMMECODE", $request->input("program", ""));
-        }
-        if ($request->has('level') && trim($request->input('level')) != "") {
-            $student->where("YEAR", $request->input("level", ""));
-        }
-        if ($request->has('season') && trim($request->input('season')) != "") {
-            $student->where("TYPE", "=", $request->input("season", ""));
-        }
-        if ($request->has('indexno') && trim($request->input('indexno')) != "") {
-            $student->where("INDEXNO", "=", $request->input("indexno", ""));
-        }
-        if ($request->has('type') && trim($request->input('type')) == "owing") {
-            $student->where("BILL_OWING", ">", "0");
-        }
-        if ($request->has('filter') && trim($request->input('filter')) != "" && $request->input('amount') != "") {
-            $filter = $request->input('filter');
-            $amount = $request->input('amount');
-            if ($filter == '=') {
-                $student->where("BILL_OWING", $amount);
-            } else {
-                $student->where("BILL_OWING", "$filter", $amount);
-                // dd($request);
-            }
-        }
-        $sys = new SystemController();
-        $data = $student->paginate(100000);
-        $data->setPath(url("owing_paid"));
-        $request->flashExcept("_token");
-        foreach ($data as $key => $row) {
-            $total[] = $row->BILL_OWING;
-            $data[$key]->TOTALS = array_sum($total);
-            $data[$key]->TOTALS = @$sys->formatMoney($data[$key]->TOTALS);
-        }
-        \Session::put('students', $data);
-        return view('finance.fees.owing')->with("data", $data)
-            ->with('program', $sys->getProgramList());
-
-    }
 
     public function sendFeeSMS(Request $request)
     {
@@ -315,112 +225,8 @@ class FeeController extends Controller
 
     }
 
-    public function anyData(Request $request)
-    {
 
 
-        $fees = FeeModel::join('tpoly_programme', 'tpoly_fees.PROGRAMME', '=', 'tpoly_programme.ID')
-            ->select(['tpoly_fees.ID', 'tpoly_fees.NAME', 'tpoly_fees.DESCRIPTION', 'tpoly_fees.AMOUNT', 'tpoly_fees.FEE_TYPE', 'tpoly_fees.SEASON_TYPE', 'tpoly_programme.PROGRAMME', 'tpoly_fees.LEVEL', 'tpoly_fees.SEMESTER', 'tpoly_fees.YEAR', 'tpoly_fees.STATUS', 'tpoly_fees.NATIONALITY']);
-
-
-        return Datatables::of($fees)
-            ->addColumn('action', function ($fee) {
-                if ($fee->STATUS == 'approved') {
-                    return "<span class='uk-text-success'>Approved ready</span>";
-                } else {
-                    return
-                        \Form::open(['action' => ['FeeController@destroy', 'id' => $fee->ID], 'method' => 'DELETE', 'name' => 'myform', 'style' => 'display: inline;'])
-
-                        . " <button type=\"button\" class=\"md-btn  md-btn-danger md-btn-small   md-btn-wave-light waves-effect waves-button waves-light\" onclick=\"UIkit.modal.confirm('Are you sure you want to delete this fee?', function(){ document.forms[0].submit(); });\"><i  class=\"sidebar-menu-icon material-icons md-18\">delete</i></button>
-                         <input type='hidden' name='fee' value='$fee->ID'/>  
-                      " . \Form::close() . "
-
-                    <button title='click to approve fees' type=\"button\" class=\"md-btn  md-btn-primary md-btn-small   md-btn-wave-light waves-effect waves-button waves-light\" onclick=\"UIkit.modal.confirm('Are you sure you want to bill student with this fee item?', function(){   return window.location.href='run_bill/$fee->ID/id'     ; });\"><i  class=\"sidebar-menu-icon material-icons md-18\">done</i></button> 
-                       
-                   ";
-
-
-                }
-
-
-            })
-            ->editColumn('id', '{!! $ID!!}')
-            ->setRowId('id')
-            ->setRowClass(function ($fee) {
-                // return $fee->ID % 2 == 0 ? 'uk-text-success uk-text-bold' : 'uk-text-warning uk-text-bold';
-            })
-            ->setRowData([
-                'id' => 'test',
-            ])
-            ->setRowAttr([
-                'color' => 'red',
-            ])
-            ->make(true);
-
-        //flash the request so it can still be available to the view or search form and the search parameters shown on the form
-        //$request->flash();
-    }
-
-    // approve bill here
-    public function approve(Request $request, $id)
-    {
-        if (@\Auth::user()->role == 'FO') {
-            $sys = new SystemController();
-            $array = $sys->getSemYear();
-            $sem1 = $array[0]->SEMESTER;
-            $year1 = $array[0]->YEAR;
-            /*
-             * make sure only bills for the current semester are charged againts
-             * students
-             * get current semester and year
-             */
-
-            //get the current user in session
-            $user = \Auth::user()->id;
-            //  dd($user);
-            //get the bill item
-            $query = FeeModel::where('ID', $id)->get()->toArray();
-
-            $programme = $sys->getProgramCodeByID($query[0]['PROGRAMME']);
-
-            $amount = $query[0]['AMOUNT'];
-            $level = $query[0]['LEVEL'];
-            $year = $query[0]['YEAR'];
-            $name = $query[0]['NAME'];
-            // if the fee is actually for the current academic year
-            if ($year1 == $year) {
-                \DB::beginTransaction();
-                try {
-
-                    // get students details
-                    $balance = StudentModel::where("PROGRAMMECODE", $programme)->where('YEAR', $level)->where('STATUS', '=', 'In school')->limit(1)->get();
-
-                    $bill = @$balance[0]->BILLS + $amount;
-                    $billOwing = @$balance[0]->BILL_OWING + $amount;
-
-                    $sql = StudentModel::where("PROGRAMMECODE", $programme)->where('YEAR', $level)->where('STATUS', '=', 'In school')->update(array("BILLS" => $bill, 'BILL_OWING' => $billOwing));
-
-                    if (!$sql) {
-
-                        return redirect("/view_fees")->with("error", "Error in billing:<span style='font-weight:bold;font-size:13px;'> $name with amount GHC$amount for level $level $programme $year  academic year could not be applied!</span>");
-                    } else {
-                        $sql = FeeModel::where("ID", $id)->update(array("APPROVED_BY" => $user, 'STATUS' => 'approved'));
-
-                        if ($sql) {
-                            \DB::commit();
-                            return redirect("/view_fees")->with("success", "Following bill:<span style='font-weight:bold;font-size:13px;'>  $name with amount GHC$amount for level $level $programme $year  academic year successfully applied!</span> ");
-                        }
-                    }
-                } catch (\Exception $e) {
-                    \DB::rollback();
-                }
-            } else {
-                return redirect("/view_fees")->with("error", array("Error in billing:<span style='font-weight:bold;font-size:13px;'> $name with amount GHC$amount for level $level $programme $year  is not meant for the current academic year <br/> and therefore could not be applied!</span>"));
-            }
-        } else {
-            throw new HttpException(Response::HTTP_UNAUTHORIZED, 'This action is unauthorized.');
-        }
-    }
 
     public function showPayform()
     {
@@ -451,27 +257,7 @@ class FeeController extends Controller
 
     }
 
-    // this handle late fee payment ie penalty
-    public function showStudentPenalty(Request $request)
-    {
 
-        $student = explode(',', $request->input('q'));
-        $student = $student[0];
-
-        $sql = StudentModel::where("INDEXNO", $student)->orwhere("STNO", $student)->get();
-        //dd($sql);
-        if (count($sql) == 0) {
-
-            return redirect("/pay_fees")->with("error", "<span style='font-weight:bold;font-size:13px;'> $request->input('q') does not exist!</span>");
-        } else {
-            $sys = new SystemController();
-            $array = $sys->getSemYear();
-            $sem = $array[0]->SEMESTER;
-            $year = $array[0]->YEAR;
-            return view("finance.fees.process_penalty")->with('data', $sql)->with('year', $year)->with('sem', $sem)->with('banks', $this->banks())->with('receipt', $this->getReceipt());
-
-        }
-    }
 
     public function processPayment(Request $request,SystemController $sys)
     {
@@ -614,74 +400,58 @@ class FeeController extends Controller
         }*/
     }
 
-    // allow student to register by authority
-    public function allowRegister(Request $request)
-    {
-        if (@\Auth::user()->department == "Finance") {
-            if ($request->isMethod("get")) {
-                return view("finance.fees.allowRegister");
-            } else {
-                $sys = new SystemController();
-                $array = $sys->getSemYear();
-                $sem = $array[0]->SEMESTER;
-                $year = $array[0]->YEAR;
-                $student = explode(',', $request->input('q'));
-                $student = $student[0];
+     public function index(Request $request, SystemController $sys){
+         $array = $sys->getSemYear();
+         $sem = $array[0]->term;
+         $year = $array[0]->year;
+         $fee = FeePaymentModel::query();
 
-                $sql = StudentModel::where("INDEXNO", $student)->orwhere("STNO", $student)->get();
-                //dd($sql);
-                if (count($sql) == 0) {
+         if ($request->has('class') && trim($request->input('class')) != "") {
+             $fee->where("classes", $request->input("class", ""));
+         }
 
-                    return redirect("/students")->with("error", "<span style='font-weight:bold;font-size:13px;'> $request->input('q') does not exist!</span>");
-                } else {
+         if ($request->has('indexno') && trim($request->input('indexno')) != "") {
+             $fee->where("stuId", '=', $request->input("indexno", ""));
+         }
+         if ($request->has('year') && trim($request->input('year')) != "") {
+             $fee->where("year", "=", $request->input("year", ""));
+         }
 
-                    return view("finance.fees.processProtocol")->with('data', $sql)->with('year', $year)->with('sem', $sem);
 
-                }
-            }
-        } else {
-            return redirect("/dashboard");
-        }
 
-    }
+         if ($request->has('type') && trim($request->input('type'))) {
+             $fee->where("type", "=", $request->input('type'));
+         }
+         if ($request->has('paytype') && trim($request->input('paytype'))) {
+             $fee->where("paymentType", "=", $request->input('type'));
+         }
+         $data = $fee->groupBy('classes')->orderBy('created_at', 'DESC')->paginate(10000);
 
-    public function processProtocol(Request $request, SystemController $sys)
-    {
-        if (@\Auth::user()->department == "Finance") {
+         $request->flashExcept("_token");
+         \Session::put('students', $data);
 
-            $this->validate($request, [
-                'action' => 'required',
-                'reason' => 'required',
-                'type' => 'required',
-            ]);
-            $array = $sys->getSemYear();
-            $sem = $array[0]->SEMESTER;
-            $year = $array[0]->YEAR;
-            $action = $request->input("action");
-            $student = $request->input("student");
-            $reason = $request->input("reason");
-            $type = $request->input("type");
-            $protocol = new Models\ProtocolModel();
+         foreach ($data as $key => $row) {
+             $a[] = $row->paid;
+             //$data[$key]->TOTALS = array_sum($a);
 
-            $protocol->year = $year;
-            $protocol->sem = $sem;
-            $protocol->student = $student;
-            $protocol->reason = $reason;
-            $protocol->action = $action;
-            $protocol->policy = $type;
-            $protocol->user = @\Auth::user()->id;
-            if ($protocol->save()) {
-                return redirect("/students")->with("success", "Registration protocol subscribed for $student successful. He/She can proceed to register");
-            } else {
-                return redirect("/finance/protocol")->with("error", "Error processing protocol for $student. Try again later");
+             $t[] = $this->getTotalPayment($row->stuId, $row->term, $row->year);
+             $data[$key]->paid = @array_sum($t);
+         }
 
-            }
+         $totals = @$sys->formatMoney($data[$key]->paid);
+         return view('finance.reports.paid')->with("data", $data)
+             ->with('program', $sys->getProgramList())
+             ->with('year', $this->years())
+             ->with('bank', $this->banks())
+             ->with('nationality', $sys->getCountry())
 
-        } else {
-            return redirect("/dashboard");
-        }
-    }
-
+             ->with('religion', $sys->getReligion())
+             ->with('region', $sys->getRegions())
+             ->with('department', $sys->getDepartmentList())
+             ->with('class', $sys->getClassList())
+             ->with('house', $sys->getHouseList())
+             ->with('total', $totals);
+     }
     public function printOldReceipt(Request $request)
     {
 
@@ -1341,5 +1111,132 @@ class FeeController extends Controller
         } catch (\Exception $e) {
             \DB::rollback();
         }
+    }
+
+    public function owing(Request $request,SystemController $sys){
+
+         $student = StudentModel::query()->where("totalOwing",">",0);         
+
+         if ($request->has('program') && trim($request->input('program')) != "") {
+            $student->where("programme", $request->input("program", ""));
+        }
+        if ($request->has('class') && trim($request->input('class')) != "") {
+            $student->where("currentClass", $request->input("class", ""));
+        }
+        if ($request->has('status') && trim($request->input('status')) != "") {
+            $student->where("status", $request->input("status", ""));
+        }
+        if ($request->has('type') && trim($request->input('type')) != "") {
+            $student->where("studentType", $request->input("type", ""));
+        }
+        if ($request->has('group') && trim($request->input('group')) != "") {
+            $student->where("yearGroup", $request->input("yearGroup", ""));
+        }
+        if ($request->has('nationality') && trim($request->input('nationality')) != "") {
+            $student->where("nationality", $request->input("country", ""));
+        }
+        if ($request->has('region') && trim($request->input('region')) != "") {
+            $student->where("region", $request->input("region", ""));
+        }
+        if ($request->has('gender') && trim($request->input('gender')) != "") {
+            $student->where("gender", $request->input("gender", ""));
+        }
+        if ($request->has('sms') && trim($request->input('sms')) != "") {
+            $student->where("SMS_SENT", $request->input("sms", ""));
+        }
+        if ($request->has('house') && trim($request->input('house')) != "") {
+            $student->where("house", $request->input("house", ""));
+        }
+        
+        if ($request->has('religion') && trim($request->input('religion')) != "") {
+            $student->where("religion", $request->input("religion", ""));
+        }
+        if ($request->has('search') && trim($request->input('search')) != "" && trim($request->input('by')) != "") {
+            // dd($request);
+            $student->where($request->input('by'), "LIKE", "%" . $request->input("search", "") . "%")
+               ->orWhere("indexNo","LIKE", "%" . $request->input("search", "") . "%");
+        }
+        $data = $student->orderBy('currentClass')->orderBy('programme')->orderBy('indexNo')->paginate(300);
+
+        $request->flashExcept("_token");
+
+        \Session::put('students', $data);
+        return view('finance.reports.owing')->with("data", $data)
+                        ->with('year', $sys->years())
+                        ->with('nationality', $sys->getCountry())
+                         
+                        ->with('religion', $sys->getReligion())
+                        ->with('region', $sys->getRegions())
+                        ->with('department', $sys->getDepartmentList())
+                        ->with('class', $sys->getClassList())
+                        ->with('house', $sys->getHouseList())
+                        ->with('programme', $sys->getProgramList())
+                      ;
+        
+
+    }
+
+
+     public function paid(Request $request,SystemController $sys){
+
+         $student = StudentModel::query()->where("totalOwing","=",0);         
+
+         if ($request->has('program') && trim($request->input('program')) != "") {
+            $student->where("programme", $request->input("program", ""));
+        }
+        if ($request->has('class') && trim($request->input('class')) != "") {
+            $student->where("currentClass", $request->input("class", ""));
+        }
+        if ($request->has('status') && trim($request->input('status')) != "") {
+            $student->where("status", $request->input("status", ""));
+        }
+        if ($request->has('type') && trim($request->input('type')) != "") {
+            $student->where("studentType", $request->input("type", ""));
+        }
+        if ($request->has('group') && trim($request->input('group')) != "") {
+            $student->where("yearGroup", $request->input("yearGroup", ""));
+        }
+        if ($request->has('nationality') && trim($request->input('nationality')) != "") {
+            $student->where("nationality", $request->input("country", ""));
+        }
+        if ($request->has('region') && trim($request->input('region')) != "") {
+            $student->where("region", $request->input("region", ""));
+        }
+        if ($request->has('gender') && trim($request->input('gender')) != "") {
+            $student->where("gender", $request->input("gender", ""));
+        }
+        if ($request->has('sms') && trim($request->input('sms')) != "") {
+            $student->where("SMS_SENT", $request->input("sms", ""));
+        }
+        if ($request->has('house') && trim($request->input('house')) != "") {
+            $student->where("house", $request->input("house", ""));
+        }
+        
+        if ($request->has('religion') && trim($request->input('religion')) != "") {
+            $student->where("religion", $request->input("religion", ""));
+        }
+        if ($request->has('search') && trim($request->input('search')) != "" && trim($request->input('by')) != "") {
+            // dd($request);
+            $student->where($request->input('by'), "LIKE", "%" . $request->input("search", "") . "%")
+               ->orWhere("indexNo","LIKE", "%" . $request->input("search", "") . "%");
+        }
+        $data = $student->orderBy('currentClass')->orderBy('programme')->orderBy('indexNo')->paginate(300);
+
+        $request->flashExcept("_token");
+
+        \Session::put('students', $data);
+        return view('finance.reports.paid')->with("data", $data)
+                        ->with('year', $sys->years())
+                        ->with('nationality', $sys->getCountry())
+                         
+                        ->with('religion', $sys->getReligion())
+                        ->with('region', $sys->getRegions())
+                        ->with('department', $sys->getDepartmentList())
+                        ->with('class', $sys->getClassList())
+                        ->with('house', $sys->getHouseList())
+                        ->with('programme', $sys->getProgramList())
+                      ;
+        
+
     }
 }

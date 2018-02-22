@@ -25,17 +25,17 @@ class SearchController extends Controller
         $results = array();
 
 
-        $queries = DB::table('student')
-            ->where('indexNo', 'LIKE', '%' . $term . '%')
+        $queries = DB::table('registration_card')
+            ->where('Registration_No', 'LIKE', '%' . $term . '%')
 
-            ->orwhere('surname', 'LIKE', '%' . $term . '%')
+            ->orwhere('Surname', 'LIKE', '%' . $term . '%')
 
-            ->orWhere('othernames', 'LIKE', '%' . $term . '%')
-            ->orWhere('name', 'LIKE', '%' . $term . '%')
+            ->orWhere('First_Name', 'LIKE', '%' . $term . '%')
+            ->orWhere('Other_Names', 'LIKE', '%' . $term . '%')
             ->take(500)->get();
         foreach ($queries as $query) {
 
-                $results[] = ['id' => $query->id, 'value' => $query->indexNo . ',' . $query->name];
+                $results[] = ['id' => $query->id, 'value' => $query->Registration_No . ',' . $query->Surname. ' ' . $query->First_Name];
 
         }
         return Response::json($results);

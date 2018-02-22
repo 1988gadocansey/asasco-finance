@@ -11,7 +11,7 @@
                     @inject('sys', 'App\Http\Controllers\SystemController')
                     <?php for ($i = 1; $i <= 1; $i++) {?>
 
-                    <table  width="1000"   border="0" cellspacing="1">
+                    <table  width="1000" height="130"  border="0" cellspacing="1">
                                     <tr>
                                          
                                                     <td>  <img src='{{url("public/assets/img/logo.PNG")}}' style="width:70px;height: auto;margin-top:-48px; margin-left:80px"/>
@@ -21,7 +21,7 @@
                                                     <td style="text-align:center;text-transform:uppercase;margin-left:20px" class="uk-text-upper"> 
                                                              
 
-                                                                <p>Asamankese Senior High School  <br/>
+                                                                <p class="uk-text-bold">Asamankese Senior High School  <br/>
                                                                Asamankese,E/R <br/>
                                                                  Tel, +23348383838 <br/> &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; <span   class="uk-text-success">OFFICIAL RECEIPTS</span>
                                                   
@@ -49,12 +49,16 @@
 
                     <p class="uk-text-bold uk-text-upper">RECEIVED FROM : {!!ucwords(@$student->name) !!}</p>
                     <p class="uk-text-bold uk-text-upper">THE SUM OF :   GHC {!! @$transaction->paid!!}  &nbsp;(<span > {!! $words !!}</span> )</p>
-                    <p class="uk-text-bold uk-text-upper">PAYMENT OF FEES FOR :   {!! ucwords($transaction->type)!!} fees FOR {!! @$student->currentClass !!}  </p>
+                    <p class="uk-text-bold uk-text-upper">PAYMENT OF :   {!! ucwords($transaction->type)!!} fees FOR {!! @$student->currentClass !!}, term {!! @$term !!},{!! @$year !!}  Academic year</p>
 
                     <p class="uk-text-bold uk-text-upper">RECEIVED BY : {!! ucwords(@$transaction->staff->name)!!}</p>
 
 
-
+                    <p>
+                        <center> <?php
+                                                    echo '<img src="data:image/png;base64,' . DNS1D::getBarcodePNG($student->indexNo, "C39+") . '" alt="barcode"   />';
+                                                    ?>    </center>
+                    </p>
 
                     <?php }
                     ?>

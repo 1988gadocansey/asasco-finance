@@ -41,7 +41,7 @@
         <div class="header_main_content">
             <nav class="uk-navbar">
                 <div class="main_logo_top">
-                    <a href="/dashboard"><img src="public/assets/img/logo.png" alt=""  style="width: 63px"/></a>
+                    <a href="/dashboard"><img src="{{url('public/assets/img/logo.png')}}" alt=""  style="width: 63px"/></a>
 
                 </div>
 
@@ -212,9 +212,9 @@
                     <div class="uk-dropdown uk-dropdown-scrollable">
                         <ul class="uk-nav uk-nav-dropdown">
                             <li><a href='{!! url("/pay/fees") !!}'>Pay Fees</a></li>
-                            <li><a href='{!! url("/statement_account") !!}'>View Students owing</a></li>
-                            <li><a href='{!! url("/statement_account") !!}'>View Students Paid</a></li>
-                            <li><a href='{!! url("/statement_account") !!}'>Print Receipts</a></li>
+                            <li><a href='{!! url("/student/owing") !!}'>View Students owing</a></li>
+                            <li><a href='{!! url("/student/paid") !!}'>View Students Paid</a></li>
+                            <li><a href='{!! url("/transactions/ledger") !!}'>View daily payments</a></li>
 
                          </ul>
                     </div>

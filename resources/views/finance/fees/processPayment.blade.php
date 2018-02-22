@@ -130,9 +130,9 @@
                                                 <option>Select payment type</option>
                                                 <option value="Cash">Cash</option>
                                                  
-                                                <option value="Bursery">Bursery</option>
-                                                <option value="Overdraft">Overdraft</option>
-                                                <option value="Scholarship">Scholarship</option>
+                                                <option value="Direct-Pay In">Direct-Pay In</option>
+                                                <option value="Banker's Draft">Banker's Draft</option>
+                                                <option value="Cheque">Cheque</option>
                                             </select>
                                              <p class="uk-text-danger uk-text-small"  v-if="applicationForm.payment_detail.$error.required" >Payment type is required</p>
 

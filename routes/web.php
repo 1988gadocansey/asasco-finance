@@ -31,8 +31,7 @@ Route::group(['middleware' => ['web']], function () {
     Route::get('/dashboard', 'HomeController@index');
     Route::get('/home', 'HomeController@index');
     Route::get('/students', 'StudentController@index');
-    Route::post('/biodataUpdate', 'StudentController@biodataSave');
-    Route::post('/profile/upload', 'PhotoController@uploadPhoto');
+   
 
     Route::match(array("get", "post"),'/course_registration','CourseController@register');
 
@@ -42,6 +41,15 @@ Route::group(['middleware' => ['web']], function () {
 
     Route::get('/printreceipt/{receiptno}', 'FeeController@printreceipt');
     Route::get('search/autocomplete', 'SearchController@autocomplete');
+
+
+
+    Route::get('/student/owing', 'FeeController@owing');
+
+    Route::get('/student/paid', 'FeeController@index');
+    Route::get('transactions/ledger', 'FeeController@masterLedger');
+
+
 
 //
 
