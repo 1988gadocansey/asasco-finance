@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use Faker\Provider\DateTime;
 use Illuminate\Http\Response;
 use Illuminate\Http\Request;
 use App\Models\FeeModel;
@@ -74,8 +75,13 @@ class FeeController extends Controller
             $yearr = $array[0]->year;
         }
 
-        $fee = FeePaymentModel::query()->where('year', '=', $yearr)->where('term', $term)->where('stuId', $student)->sum('paid');
-        return $fee;
+        //$fee = FeePaymentModel::query()->where('year', '=', $yearr)->where('term', $term)->where('stuId', $student)->sum('paid');
+
+        $paid = Models\PaymentTransactions::where("Registration_No", $student)->where("Academic_Year",$yearr)
+            ->where("Academic_Term",$term)->where("Transaction_Type","PAYMENT")
+            ->where("Item_Status","ACTIVE")->sum("Credit_Amount");
+
+        return $paid;
 
 
     }
@@ -134,6 +140,72 @@ class FeeController extends Controller
 
     }
 
+    public function dailyPayments(Request $request, SystemController $sys){
+        $array = $sys->getSemYear();
+        $sem = $array[0]->term;
+        $year = $array[0]->year;
+        $fee = Models\PaymentTransactions::query()->where("Item_Status","ACTIVE");
+
+        if ($request->has('class') && trim($request->input('class')) != "") {
+            $fee->where("Currently_In_Class", $request->input("class", ""));
+        }
+
+        if ($request->has('indexno') && trim($request->input('indexno')) != "") {
+            $fee->where("Registration_No", '=', $request->input("indexno", ""));
+        }
+        if ($request->has('year') && trim($request->input('year')) != "") {
+            $fee->where("Academic_Year", "=", $request->input("year", ""));
+        }
+        if ($request->has('term') && trim($request->input('term')) != "") {
+            $fee->where("Academic_Term", "=", $request->input("term", ""));
+        }
+
+
+        if ($request->has('type') && trim($request->input('type'))!="") {
+            $fee->where("Payment_Method", "=", $request->input('type'));
+        }
+        if (($request->has('from_date') && $request->input('to_date'))&&($request->input('from_date')!="" && $request->input('to_date')!="")) {
+            //$fee->whereBetween('TRANSDATE', [$request->input('from_date'), $request->input('to_date')]);
+            $fee->whereBetween(\DB::raw('created_at'), array($request->input('from_date'), $request->input('to_date')));
+        }
+
+
+        $data = $fee->orderBy('created_at', 'DESC')->paginate(100);
+
+        $request->flashExcept("_token");
+        \Session::put('students', $data);
+
+        /*foreach ($data as $key => $row) {
+            $a[] = $row->paid;
+
+            $t[] = $this->getTotalPayment($row->Registration_No, $row->Academic_Term, $row->Academic_Year);
+            $data[$key]->Credit_Amount = @array_sum($t);
+        }*/
+
+        //$totals = @$sys->formatMoney($data[$key]->paid);
+
+        foreach ($data as $key => $row) {
+
+            $t[] = $row->Credit_Amount;
+            $data[$key]->TOTALS = @array_sum($t);
+        }
+
+        $totals = @$sys->formatMoney($data[$key]->TOTALS);
+        return view('finance.reports.transactions')->with("data", $data)
+            ->with('program', $sys->getProgramList())
+            ->with('year', $this->years())
+            ->with('bank', $this->banks())
+            ->with('nationality', $sys->getCountry())
+            ->with('total', $totals)
+            ->with('religion', $sys->getReligion())
+            ->with('region', $sys->getRegions())
+            ->with('department', $sys->getDepartmentList())
+            ->with('class', $sys->getClassList())
+            ->with('house', $sys->getHouseList())
+            ;
+
+    }
+
 
     public function sendFeeSMS(Request $request)
     {
@@ -176,55 +248,61 @@ class FeeController extends Controller
         return str_pad($receiptno, 12, "0", STR_PAD_LEFT);
     }
 
-    /**
-     * Display a list of proposed fees.
-     *
-     * @param  Request $request
-     * @return Response
-     */
-    public function getIndex(Request $request)
-    {
-        $sys = new SystemController();
-        $array = $sys->getSemYear();
-        $sem = $array[0]->SEMESTER;
-        $year = $array[0]->YEAR;
-        $fee = FeeModel::query();
 
-        if ($request->has('level') && trim($request->input('level')) != "") {
-            $fee->where("LEVEL", $request->input("level", ""));
+    public function processPaymentUpload(Request $request,SystemController $sys){
+        if($request->hasFile('file')){
+            $array = $sys->getSemYear();
+            $sem = $array[0]->term;
+            $year = $array[0]->year;
+            $file=$request->file('file');
+            $user = \Auth::user()->fund;
+
+            $ext = strtolower($file->getClientOriginalExtension());
+            $valid_exts = array('csv','xlx','xlsx'); // valid extensions
+
+            $path = $request->file('file')->getRealPath();
+            if (in_array($ext, $valid_exts)) {
+                $data = Excel::load($path, function($reader) {
+
+                })->get();
+
+               // dd($data);
+                if(!empty($data) && $data->count()){
+
+
+                    foreach ($data as $key => $value) {
+                        $object=$sys->getStudentData($value->customerid);
+                        $program=$object->Academic_Programme;
+                        $class=$object->Currently_In_Class;
+
+                        $receipt=date('Y').str_pad(mt_rand(1,99999999),8,'0',STR_PAD_LEFT);
+
+                        $insert[] = ['Academic_Programme'=>$program,'Currently_In_Class'=>$class,'bank_date' => $value->date,'Academic_Term'=>$sem,'Academic_Year'=>$year,'Transaction_Type'=>'PAYMENTS','transaction_description'=> $value->transaction_description, 'Receipt_No' => $receipt,'Registration_No'=>$value->customerid,'Credit_Amount'=>$value->amount,'Running_Balance'=>$value->cumulativeamt,'Received_By'=>$user
+                        ,'created_at'=>new \DateTime(),
+                            'Payment_Method'=>'eTransact Upload'
+                        ];
+
+                    }
+
+                    // dd($insert);
+                    if(!empty($insert)){
+
+                        \DB::table('students_ledger')->insert($insert);
+
+                         return redirect('/transactions/ledger')->with("success",  " <span style='font-weight:bold;font-size:13px;'>Payments  successfully uploaded!</span> " );
+
+
+                    }
+
+                }
+
+            }
+            else{
+                return redirect('/upload/payments')->with("error", " <span style='font-weight:bold;font-size:13px;'>Please upload file format must be xlx,csv,xslx!</span> ");
+
+            }
         }
-
-        if ($request->has('year') && trim($request->input('year')) != "") {
-            $fee->where("YEAR", "=", $request->input("year", ""));
-        }
-
-        if ($request->has('program') && trim($request->input('program'))) {
-            $fee->where("PROGRAMME", "=", $request->input('program'));
-        }
-
-
-        $data = $fee->orderBy('LEVEL', 'ASC')->paginate(100);
-
-        $request->flashExcept("_token");
-
-        foreach ($data as $key => $row) {
-            $total[] = $row->AMOUNT;
-            $data[$key]->TOTALS = array_sum($total);
-            $data[$key]->TOTALSTUDENTS = @$sys->getTotalFeeByProrammeLevel($row->PROGRAMME, $row->LEVEL);
-            $data[$key]->TOTALAMOUNT = @$sys->getTotalFeeByProrammeLevel($row->PROGRAMME, $row->LEVEL) * $row->AMOUNT;
-            $total_proposed[] = $data[$key]->TOTALAMOUNT;
-            $data[$key]->TotalProposed = array_sum($total_proposed);
-        }
-
-        $totalProposed = @$sys->formatMoney($data[$key]->TotalProposed);
-        return view('finance.fees.index')->with("data", $data)
-            ->with('program', $sys->getProgramByIDList())
-            ->with('year', $this->years())
-            ->with('bank', $this->banks())
-            ->with('totalProposed', $totalProposed);
-
     }
-
 
 
 
@@ -238,28 +316,125 @@ class FeeController extends Controller
         $student = explode(',', $request->input('q'));
         $student = $student[0];
 
-        $sql = StudentModel::where("indexNo", $student)->get();
+        $sql = Models\RegistrationCard::where("Registration_No", $student)->get();
 
 
         if (count($sql) == 0) {
 
-            return redirect("/pay_fees")->with("error", "<span style='font-weight:bold;font-size:13px;'> $request->input('q') does not exist!</span>");
+            return redirect("/pay/fees")->with("error", "<span style='font-weight:bold;font-size:13px;'> $request->input('q') does not exist!</span>");
         } else {
 
             $array = $sys->getSemYear();
             $sem = $array[0]->term;
             $year = $array[0]->year;
+
+            $bills = Models\PaymentTransactions::where("Registration_No", $student)->where("Academic_Year",$year)
+                ->where("Academic_Term",$sem)->where("Transaction_Type","BILLING")
+                ->where("Item_Status","ACTIVE")->sum("Debit_Amount");
+
+
+            $paid = Models\PaymentTransactions::where("Registration_No", $student)->where("Academic_Year",$year)
+                ->where("Academic_Term",$sem)->where("Transaction_Type","PAYMENT")
+                ->where("Item_Status","ACTIVE")->sum("Credit_Amount");
+
+
             return view("finance.fees.processPayment")->with('data', $sql)->with('year', $year)->with('sem', $sem)
                 ->with("class", $sys->getClassList())
+                ->with("paid",$paid)
+                ->with("bills",$bills)
                 ->with('banks', $this->banks())->with('receipt', $this->getReceipt());
 
         }
 
     }
 
+    public function processPayment(Request $request,SystemController $sys){
+        // if (@\Auth::user()->department == "Finance") {
+
+        $array = $sys->getSemYear();
+        $sem = $array[0]->term;
+        $year = $array[0]->year;
+        $phone = $request->input('phone');
+
+        $user = \Auth::user()->fund;
+        $program = $request->input('programme');
+
+        $type = $request->input('type');
+        $amount = $request->input('amount');
+        $receipt = $request->input('receipt');
+        $indexno = $request->input('student');
+
+        $class = $request->input('currentClass');
+        $newClass = $request->input('class');
+
+        $bank = $request->input('bank');
+
+        $bank_date = $request->input('bank_date');
 
 
-    public function processPayment(Request $request,SystemController $sys)
+        $sql = Models\PaymentTransactions::where("Receipt_No", $receipt)->first();
+
+
+        if (empty($sql)) {
+            $feeLedger = new Models\PaymentTransactions();
+            $feeLedger->Registration_No = $indexno;
+            $feeLedger->Currently_In_Class = $class;
+            $feeLedger->Academic_Programme = $program;
+            $feeLedger->Credit_Amount = $amount;
+            $feeLedger->Payment_Method = $type;
+
+            $feeLedger->bank_date = $bank_date;
+
+
+            $feeLedger->Received_By = $user;
+            $feeLedger->bank = $bank;
+
+            $feeLedger->Receipt_No = $receipt;
+            $feeLedger->Academic_Year = $year;
+
+            $feeLedger->Academic_Term = $sem;
+            $feeLedger->Item_Status = "ACTIVE";
+
+            if ($feeLedger->save()) {
+
+                $this->updateReceipt();
+
+
+                $balance = Models\RegistrationCard::where("Registration_No", $indexno)->get();
+
+
+                @$firstName = @$balance[0]->First_Name;
+
+                $billOwing = (@$balance[0]->totalOwings - $amount) ;
+                $totalPaid = (@$balance[0]->totalPayments + $amount) ;
+                if(!empty( $newClass)) {
+                    Models\RegistrationCard::where('Registration_No', $indexno)->update(array(  'Currently_In_Class' => $newClass,  'totalOwings' => $billOwing,    'totalPayments' => $totalPaid));
+                }
+                else{
+                    Models\RegistrationCard::where('Registration_No', $indexno)->update(array('totalOwings' => $billOwing,    'totalPayments' => $totalPaid));
+
+                }
+
+
+                $url = url("printreceipt/" . trim($receipt));
+                $print_window = "<script >window.open('$url','','location=1,status=1,menubar=yes,scrollbars=yes,resizable=yes,width=1000,height=500')</script>";
+                $request->session()->flash("success", "Payment successfully   $print_window");
+                return redirect("/pay");
+            }
+
+
+
+
+        } else {
+              return redirect("/pay")->with("error", " <span style='font-weight:bold;font-size:13px;'> Payment already made with this receipt  number  </span>");
+        }
+
+        /* } else {
+             return redirect("/dashboard")->with("message", "Unauthorized access detected.");
+         }*/
+    }
+
+    public function processPaymentOld(Request $request,SystemController $sys)
     {
        // if (@\Auth::user()->department == "Finance") {
             
@@ -557,14 +732,16 @@ class FeeController extends Controller
 
         // $this->show_query();
 
-        $transaction = FeePaymentModel::where("RECEIPTNO", $receiptno)->with("student", "bank"
+        $transaction = Models\PaymentTransactions::where("RECEIPTNO", $receiptno)->with("student", "bank"
         )->first();
 
         if (empty($transaction)) {
             abort(434, "No Fee payment   with this receipt <span class='uk-text-bold uk-text-large'>{{$receiptno}}</span>");
         }
 
-        $words = $this->convert($transaction->AMOUNT);
+        $words = $this->convert($transaction->Credit_Amount);
+
+
 
 
         return view("finance.fees.late_receipt")->with("transaction", $transaction)->with('words', $words);
@@ -579,7 +756,7 @@ class FeeController extends Controller
         $array = $sys->getSemYear();
         $sem = $array[0]->term;
         $year = $array[0]->year;
-        $transaction = FeePaymentModel::where("receiptno", $receiptno)->first();
+        $transaction = Models\PaymentTransactions::where("Receipt_No", $receiptno)->first();
 
 
 
@@ -590,9 +767,9 @@ class FeeController extends Controller
 
 
 
-            $data = StudentModel::where("indexNo", $transaction->stuId)->first();
+            $data = Models\RegistrationCard::where("Registration_No", $transaction->Registration_No)->first();
 
-            $words = $this->convert($transaction->paid);
+            $words = $this->convert($transaction->Credit_Amount);
 
 
 
@@ -1093,16 +1270,16 @@ class FeeController extends Controller
         \DB::beginTransaction();
         try {
 
-            $query = FeePaymentModel::where('ID', $request->input("id"))->first();
-            $studentIndexNo = $query->INDEXNO;
-            $amount = $query->AMOUNT;
+            $query = Models\PaymentTransactions::where('Serial_No', $request->input("id"))->first();
+            $studentIndexNo = $query->Registration_No;
+            $amount = $query->Credit_Amount;
             if ($query) {
 
-                $sql = StudentModel::where("INDEXNO", $studentIndexNo)->first();
-                $previousBalance = $sql->BILL_OWING;
-                $newBalance = $previousBalance + $amount;
-                if (FeePaymentModel::where('ID', $request->input("id"))->delete()) {
-                    StudentModel::where("INDEXNO", $studentIndexNo)->update(array("BILL_OWING" => $newBalance));
+                $sql = Models\RegistrationCard::where("Registration_No", $studentIndexNo)->first();
+                $paid = $sql->totalPayments-$amount;
+                $owing = $sql->totalOwings+$amount;
+                if (Models\PaymentTransactions::where('Serial_No', $request->input("id"))->update(array("Item_Status"=>"DELETED"))) {
+                    Models\RegistrationCard::where("Registration_No", $studentIndexNo)->update(array("totalPayments" => $paid,"totalOwings"=>$owing));
                     \DB::commit();
                 }
 

@@ -33,11 +33,14 @@ Route::group(['middleware' => ['web']], function () {
     Route::get('/students', 'StudentController@index');
    
 
-    Route::match(array("get", "post"),'/course_registration','CourseController@register');
 
-    Route::get('/pay/fees', 'FeeController@showPayform');
-    Route::post('/pay_fees', 'FeeController@showStudent');
+    Route::get('/pay', 'FeeController@showPayform');
+    Route::post('pay_fees',['as' => 'pay_fees', 'uses' => 'FeeController@showStudent']);
+
+    Route::post('go', 'FeeController@showStudent');
     Route::post('/processPayment', 'FeeController@processPayment');
+    Route::get('/upload/payments', 'FeeController@showUpload');
+    Route::post('/process_payment_upload', 'FeeController@processPaymentUpload');
 
     Route::get('/printreceipt/{receiptno}', 'FeeController@printreceipt');
     Route::get('search/autocomplete', 'SearchController@autocomplete');
@@ -47,7 +50,8 @@ Route::group(['middleware' => ['web']], function () {
     Route::get('/student/owing', 'FeeController@owing');
 
     Route::get('/student/paid', 'FeeController@index');
-    Route::get('transactions/ledger', 'FeeController@masterLedger');
+    Route::get('transactions/ledger', 'FeeController@dailyPayments');
+    Route::delete('delete_payment', 'FeeController@destroyPayment');
 
 
 

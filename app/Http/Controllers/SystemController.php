@@ -30,6 +30,12 @@ class SystemController extends Controller
              
      
  }
+    public function getStudentData($stuId){
+        $data= \DB::table('registration_card')->where("Registration_No",$stuId)->first();
+        return $data;
+
+
+    }
  public function getIndexNo1($program){
           
         $data= \DB::table('classes')->where("name",$program)->first();

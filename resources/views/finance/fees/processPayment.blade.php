@@ -33,7 +33,7 @@
   
      <h4 class="uk-text-bold uk-text-danger">Allow pop ups on your browser please!!!!!</h4>
 
-  <h5 > Fee Payment  for {!! $sem !!} Semester  | {!! $year !!} Academic Year</h5>
+  <h5 > Fee Payment  for {!! $sem !!} Term  | {!! $year !!} Academic Year</h5>
              <hr>
              
            <form id='form' method="POST" action="{{ url('processPayment') }}" accept-charset="utf-8"  name="applicationForm"  v-form>
@@ -69,15 +69,8 @@
                                         </td>
                                         </tr>
                                         
-                                        <tr>
-                                            <td  align=""> <div  align="right" class="uk-text-success">Previous owing (if any) GHC</div></td>
-                                        <td>
-                                            <input type="text"     name="prev-owing"   class="md-input">
-                                            
-                                            
-                                        </td>
-                                        </tr>
-                                        
+
+
                                         
                                         
                                         <tr>
@@ -89,7 +82,7 @@
                                             
                                         </td>
                                         </tr>
-                                    <tr>
+                                  {{--  <tr>
                                         <td  align=""> <div  align="right" class=" ">Fees Type</div></td>
                                         <td>
 
@@ -97,7 +90,7 @@
                                             <p class="uk-text-danger uk-text-small"  v-if="applicationForm.type.$error.required" >Fee type  is required</p>
 
                                         </td>
-                                    </tr>
+                                    </tr>--}}
                                          <tr>
                                             <td  align=""> <div  align="right" >Date of Payment at bank</div></td>
                                         <td>
@@ -126,10 +119,10 @@
                                         <tr>
                                             <td  align=""> <div  align="right" class=" ">Payment Mode</div></td>
                                         <td>
-                                            <select name="payment_detail" required="" class="md-input" v-form-ctrl='' v-model='payment_detail' v-select=''>
+                                            <select name="type" required="" class="md-input" v-form-ctrl='' v-model='payment_detail' v-select=''>
                                                 <option>Select payment type</option>
                                                 <option value="Cash">Cash</option>
-                                                 
+
                                                 <option value="Direct-Pay In">Direct-Pay In</option>
                                                 <option value="Banker's Draft">Banker's Draft</option>
                                                 <option value="Cheque">Cheque</option>
@@ -163,7 +156,7 @@
                                     <td>
                                         <table>
                                             <tr>
-                                            <td  align=""> <div  align="right" >Receipt No</div></td>
+                                            <td  align=""> <div  align="right" >Receipt No:</div></td>
                                         <td>
                                             {{ $receipt}}
                                             <input type="hidden" name="receipt"   value="{{ $receipt}}" />
@@ -172,88 +165,73 @@
                                         </tr>
 
                                           <tr>
-                                            <td  align=""> <div  align="right" >Index Number</div></td>
+                                            <td  align=""> <div  align="right" >Card No:</div></td>
                                         <td>
-                                            {{ $data[0]->indexNo}}
-                                             <input type="hidden" name="student" id="student" value="{{ $data[0]->indexNo}}" />
+                                            {{ $data[0]->Registration_No}}
+                                             <input type="hidden" name="student" id="student" value="{{ $data[0]->Registration_No}}" />
                                             
                                         </td>
                                         </tr>
 
                                         <tr>
-                                            <td  align=""> <div  align="right" >Full Name</div></td>
+                                            <td  align=""> <div  align="right" >Full Name:</div></td>
                                         <td>
-                                            {{ $data[0]->name}}
+                                            {{ $data[0]->First_Name.' '.$data[0]->Surname}}
                                             
                                         </td>
                                         </tr>
                                         <tr>
-                                            <td  align=""> <div  align="right" >Current Class</div></td>
+                                            <td  align=""> <div  align="right" >Current Class:</div></td>
                                         <td>
-                                            {{ $data[0]->currentClass}}
-                                            <input type="hidden" name="currentClass"  value="{{ $data[0]->currentClass}}" />
+                                            {{ $data[0]->Currently_In_Class}}
+                                            <input type="hidden" name="currentClass"  value="{{ $data[0]->Currently_In_Class}}" />
                                         </td>
                                         </tr>
                                         <tr>
-                                            <td  align=""> <div  align="right" >Programme</div></td>
+                                            <td  align=""> <div  align="right" >Programme:</div></td>
                                         <td>
-                                            {{ @$sys->getProgram($data[0]->programme)}}
-                                             <input type="hidden" name="programme"  value="{{ $data[0]->code}}" />
+                                            {{ @$data[0]->Academic_Programme}}
+                                             <input type="hidden" name="programme"  value="{{ $data[0]->Academic_Programme}}" />
                                            
                                         </td>
                                         </tr>
 
-
-                                            <tr>
-                                                <td  align=""> <div  align="right" class="uk-text-danger">Term Bills:</div></td>
-                                                <td class="uk-text-bold">
-                                                    GHS  {{ $data[0]->termBill}}
-
-                                                </td>
-                                            </tr>
-
-
-
-
-                                            <tr>
-                                                <td  align=""> <div  align="right" class="uk-text-primary">Academic Owings: </div></td>
-                                                <td class="uk-text-bold">
-                                                    GHS  {{  $data[0]->academicBillOwing}}
-                                                    <input type="hidden" id="academic" onkeyup="recalculateSum();" name="academic" value="{{$data[0]->academicBillOwing}}"/>
-
-                                                </td>
-                                            </tr>
-                                            <tr>
-                                                <td  align=""> <div  align="right" class="uk-text-primary">PTA Owings: </div></td>
-                                                <td class="uk-text-bold">
-                                                    GHS  {{  $data[0]->ptaOwing}}
-                                                    <input type="hidden" id="pta" onkeyup="recalculateSum();" name="pta" value="{{$data[0]->ptaOwing}}"/>
-
-                                                </td>
-                                            </tr>
-                                            @if($data[0]->studentType=="BOARDING")
-                                                <tr>
-                                                    <td  align=""> <div  align="right" class="uk-text-primary">Boarding Owings: </div></td>
-                                                    <td class="uk-text-bold">
-                                                        GHS  {{  $data[0]->boardingOwing}}
-                                                        <input type="hidden" id="boarding" onkeyup="recalculateSum();" name="boarding" value="{{$data[0]->boardingOwing}}"/>
-
-                                                    </td>
-                                                </tr>
-                                            @endif
                                             <tr>
                                                 <td  align=""> <div  align="right" class="uk-text-danger">Accumulated Owings b/f:</div></td>
                                                 <td class="uk-text-bold">
-                                                    GHS  {{ $data[0]->totalOwing}}
-                                                    <input type="hidden" id="bill" onkeyup="recalculateSum();" name="total" value="{{$data[0]->totalOwing}}"/>
+                                                    GHS  {{ $bills}}
+                                                    <input type="hidden" id="bill" onkeyup="recalculateSum();" name="total" value="{{$bills}}"/>
 
                                                 </td>
                                             </tr>
+                                            <tr>
+                                                <td  align=""> <div  align="right" class="uk-text-primary">This term Owings: </div></td>
+                                                <td class="uk-text-bold">
+                                                    GHS  {{  $bills}}
+
+
+                                                </td>
+                                            </tr>
+
+                                          {{--  <tr>
+                                                <td  align=""> <div  align="right" class="uk-text-danger"> Total Payments b/f:</div></td>
+                                                <td class="uk-text-bold">
+                                                    GHS  {{ $paid}}
+
+                                                </td>
+                                            </tr>--}}
+
+
+
+
+
+
+
                                             <tr>
                                                 <td align="" class="uk-text-bold"> <div  align="right" class="uk-text-success">Guardian Phone N<u>o</u>:</div></td>
                                                 <td>
 
-                                                    <input type="text" class="md-input" maxlength="10" min="10"  name="phone" value="{{$data[0]->parentPhone}}"/>
+                                                    <input type="text" class="md-input" maxlength="10" min="10"  name="phone" value="{{$data[0]->Guardian_ID}}"/>
 
                                                 </td>
                                             </tr>
@@ -302,7 +280,12 @@ $(document).ready(function(){
 
   
 });
-
+function recalculateSum()
+{
+    var num1 = parseFloat(document.getElementById("pay").value);
+    var num2 = parseFloat(document.getElementById("bill").value);
+    document.getElementById("amount_left").value = (num2 - num1);
+}
 
 </script>
   <script>

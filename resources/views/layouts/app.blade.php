@@ -211,9 +211,9 @@
                     <a href="#"><i class="sidebar-menu-icon material-icons md-18">work</i><span>Finances</span></a>
                     <div class="uk-dropdown uk-dropdown-scrollable">
                         <ul class="uk-nav uk-nav-dropdown">
-                            <li><a href='{!! url("/pay/fees") !!}'>Pay Fees</a></li>
-                            <li><a href='{!! url("/student/owing") !!}'>View Students owing</a></li>
-                            <li><a href='{!! url("/student/paid") !!}'>View Students Paid</a></li>
+                            <li><a href='{!! url("/pay") !!}'>Pay Fees</a></li>
+                           {{-- <li><a href='{!! url("/student/owing") !!}'>View Students owing</a></li>
+                            <li><a href='{!! url("/student/paid") !!}'>View Students Paid</a></li>--}}
                             <li><a href='{!! url("/transactions/ledger") !!}'>View daily payments</a></li>
 
                          </ul>
@@ -224,8 +224,8 @@
                     <a href="#"><i class="sidebar-menu-icon material-icons md-18">home</i><span>Uploads</span></a>
                     <div class="uk-dropdown uk-dropdown-scrollable">
                         <ul class="uk-nav uk-nav-dropdown">
-                            <li><a href='{!! url("/liaison/form/attachment") !!}'>Upload bills</a></li>
-                            <li><a href='{!! url("/liaison/form/assumption") !!}'>Upload Statement from Bank</a></li>
+                            <li><a href='{!! url("/upload/bills") !!}'>Upload bills</a></li>
+                            <li><a href='{!! url("/upload/payments") !!}'>Upload Statement from Bank</a></li>
                         </ul>
                     </div>
                 </li>
@@ -543,12 +543,7 @@
                 }
     </script>
     <script>
-        function recalculateSum()
-        {
-        var num1 = parseFloat(document.getElementById("pay").value);
-                var num2 = parseFloat(document.getElementById("bill").value);
-                document.getElementById("amount_left").value = (num2 - num1);
-        }
+
         function MM_openBrWindow(theURL, winName, features) { //v2.0
         window.open(theURL, winName, features);
         }

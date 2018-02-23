@@ -38,8 +38,8 @@
          <div class="md-card-content" style="height: 300px;">
              <h5 >Search student  by Name or Index Number  here</h5>
             
-             <form method="POST" action="{{url('/pay_fees')}}"  accept-charset="utf-8"  name="applicationForm"  v-form>
-                  <input type="hidden" name="_token" value="{!! csrf_token() !!}"> 
+             <form method="post" action="{{ route('pay_fees') }}"  accept-charset="utf-8"  name="applicationForm"  v-form>
+                  <input type="hidden" name="_token" value="{!! csrf_token() !!}">
              <div class="uk-grid" data-uk-grid-margin>
                  
                  <div class="uk-width-medium-1-2">
@@ -60,7 +60,7 @@
                      </div>
                  </div>
              </div>
-             </div>
+
              </form>
          </div>
      </div>
@@ -75,7 +75,7 @@ $(function()
 	  minLength: 3,
 	  select: function(event, ui) {
 	  	$('#q').val(ui.item.value);
-                
+
 	  }
 	});
 });

@@ -27,8 +27,9 @@
  
  
  </div>
+
  <div align="center">
-     <form method="POST" action="{{ url('upload_fees') }}"  enctype="multipart/form-data"  accept-charset="utf-8"  name="applicationForm"  v-form>
+     <form method="POST" action="{{ url('process_payment_upload') }}"  enctype="multipart/form-data"  accept-charset="utf-8"  name="applicationForm"  v-form>
          <input type="hidden" name="_token" value="{!! csrf_token() !!}"> 
 
          <div class="uk-width-small-1-2">
@@ -36,7 +37,7 @@
                  <div class="md-card">
                      <div class="md-card-content">
                          <h3 class="heading_a uk-margin-small-bottom">
-                            Upload fees file here  Max size - csv format only (2MB) - remove columns headers before uploading
+                            Upload fee payments from bank file here  Max size - Excel format only (2MB) - remove columns headers before uploading
                          </h3>
                          <input type="file" id="input-file-e" required="" name="file" v-model="file" v-form-ctrl="" class="dropify" data-max-file-size="200000K" />
                      </div>
@@ -49,8 +50,7 @@
              </div>
              
          </div>
-         <p>click to download fee template(PLEASE ADHERE TO THE TEMPLATE)<a href='{{url("public/uploads/fee-sample.csv")}}' download="fee-sample.csv">click download template</a></p>
-     </form>
+        </form>
  </div>
  
    

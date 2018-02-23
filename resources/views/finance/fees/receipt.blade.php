@@ -39,24 +39,24 @@
                                           
 
                      </table>
-                     <p> <span class="uk-text-bold">TOTAL ACADEMIC YEAR SCHOOL FEES:   GHC{!!  @$student->termBill!!}</span>
+                     <p> <span class="uk-text-bold">TOTAL ACADEMIC YEAR SCHOOL FEES:   GHC{!!  @$student->totalOwings!!}</span>
                          &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;&nbsp; &nbsp;&nbsp; &nbsp;&nbsp; &nbsp;&nbsp; &nbsp;&nbsp; &nbsp;&nbsp; &nbsp;&nbsp; &nbsp;&nbsp; &nbsp;&nbsp; &nbsp;
-                      <span class="uk-text-bold">RECEIPT NO:   {!!  @$transaction->receiptno; !!}</span>
+                      <span class="uk-text-bold">RECEIPT NO:   {!!  @$transaction->Receipt_No; !!}</span>
                          &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;&nbsp; &nbsp;&nbsp; &nbsp;&nbsp; &nbsp;&nbsp; &nbsp;
                          &nbsp; &nbsp;&nbsp; &nbsp;&nbsp; &nbsp;&nbsp; &nbsp;
-                         <span class="uk-text-bold uk-text-upper">DATE:  {!! date("F j, Y, g:i a",strtotime(@$transaction->dates))  !!}</span>
+                         <span class="uk-text-bold uk-text-upper">DATE:  {!! date("F j, Y, g:i a",strtotime(@$transaction->created_at))  !!}</span>
                      </p>
 
-                    <p class="uk-text-bold uk-text-upper">RECEIVED FROM : {!!ucwords(@$student->name) !!}</p>
-                    <p class="uk-text-bold uk-text-upper">THE SUM OF :   GHC {!! @$transaction->paid!!}  &nbsp;(<span > {!! $words !!}</span> )</p>
+                    <p class="uk-text-bold uk-text-upper">RECEIVED FROM : {!!ucwords(@$student->First_Name).' '.ucwords(@$student->Surname) !!}</p>
+                    <p class="uk-text-bold uk-text-upper">THE SUM OF :   GHC {!! @$transaction->Credit_Amount!!}  &nbsp;(<span > {!! $words !!}</span> )</p>
                     <p class="uk-text-bold uk-text-upper">PAYMENT OF :   {!! ucwords($transaction->type)!!} fees FOR {!! @$student->currentClass !!}, term {!! @$term !!},{!! @$year !!}  Academic year</p>
 
-                    <p class="uk-text-bold uk-text-upper">RECEIVED BY : {!! ucwords(@$transaction->staff->name)!!}</p>
+                    <p class="uk-text-bold uk-text-upper">RECEIVED BY : {!! ucwords(@$transaction->Received_By)!!}</p>
 
 
                     <p>
                         <center> <?php
-                                                    echo '<img src="data:image/png;base64,' . DNS1D::getBarcodePNG($student->indexNo, "C39+") . '" alt="barcode"   />';
+                                                    echo '<img src="data:image/png;base64,' . DNS1D::getBarcodePNG($transaction->Registration_No, "C39+") . '" alt="barcode"   />';
                                                     ?>    </center>
                     </p>
 

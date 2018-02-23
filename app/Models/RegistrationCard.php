@@ -17,7 +17,7 @@ class RegistrationCard extends Model
 
     protected $primaryKey="id";
     protected $guarded = ['id'];
-
+    public $timestamps = false;
     public function parentdetails(){
         return $this->belongsTo('App\Models\ParentModel', "Guardian_ID","id");
     }
