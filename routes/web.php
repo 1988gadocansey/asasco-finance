@@ -53,7 +53,8 @@ Route::group(['middleware' => ['web']], function () {
     Route::get('transactions/ledger', 'FeeController@dailyPayments');
     Route::delete('delete_payment', 'FeeController@destroyPayment');
 
-
+    Route::get('/upload/bills', 'FeeController@showBillUpload');
+    Route::post('/processBillUpload', 'FeeController@processBillUpload');
 
 //
 

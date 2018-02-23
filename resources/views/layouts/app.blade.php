@@ -214,7 +214,9 @@
                             <li><a href='{!! url("/pay") !!}'>Pay Fees</a></li>
                            {{-- <li><a href='{!! url("/student/owing") !!}'>View Students owing</a></li>
                             <li><a href='{!! url("/student/paid") !!}'>View Students Paid</a></li>--}}
+
                             <li><a href='{!! url("/transactions/ledger") !!}'>View daily payments</a></li>
+                            <li><a href='{!! url("/bills") !!}'>View Bills</a></li>
 
                          </ul>
                     </div>

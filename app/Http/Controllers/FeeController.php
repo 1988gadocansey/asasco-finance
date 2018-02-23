@@ -248,6 +248,68 @@ class FeeController extends Controller
         return str_pad($receiptno, 12, "0", STR_PAD_LEFT);
     }
 
+    public function showBillUpload(Request $request,SystemController $sys){
+        return view("finance.fees.billUpload");
+    }
+    public function processBillUpload(Request $request,SystemController $sys){
+        if($request->hasFile('file')){
+            $array = $sys->getSemYear();
+            $sem = $array[0]->term;
+            $year = $array[0]->year;
+            $file=$request->file('file');
+            $user = \Auth::user()->fund;
+
+            $ext = strtolower($file->getClientOriginalExtension());
+            $valid_exts = array('csv','xlx','xlsx'); // valid extensions
+
+            $path = $request->file('file')->getRealPath();
+            if (in_array($ext, $valid_exts)) {
+                $data = Excel::load($path, function($reader) {
+
+                })->get();
+
+                // dd($data);
+                if(!empty($data) && $data->count()){
+
+
+                    foreach ($data as $key => $value) {
+                        //$object=$sys->getStudentData($value->customerid);
+                        //$program=$object->Academic_Programme;
+                        //$class=$object->Currently_In_Class;
+
+                        $bill=date("Y").str_pad(mt_rand(1,999),3,'0',STR_PAD_LEFT);
+
+                        $insert[] = ['Class'=> $value->class,  'Academic_Programme'=>$value->programme,'Debit_Amount'=>$value->amount,'Item_Description'=>$value->item_description,'Created_By'=>$user
+                             ,
+                            'Bill_No'=>$bill,
+                            'Bill_Type'=>$value->bill_type,
+                            'Item_Code'=>$value->bill_category,
+                            'Academic_Year'=>$year,
+                            'Academic_Term'=>$sem
+
+                        ];
+
+                    }
+
+                    // dd($insert);
+                    if(!empty($insert)){
+
+                        \DB::table('bill_history')->insert($insert);
+
+                        return redirect('/bills')->with("success",  " <span style='font-weight:bold;font-size:13px;'>Bills  successfully uploaded!</span> " );
+
+
+                    }
+
+                }
+
+            }
+            else{
+                return redirect('/upload/payments')->with("error", " <span style='font-weight:bold;font-size:13px;'>Please upload file format must be xlx,csv,xslx!</span> ");
+
+            }
+        }
+    }
 
     public function processPaymentUpload(Request $request,SystemController $sys){
         if($request->hasFile('file')){
@@ -867,92 +929,7 @@ class FeeController extends Controller
         return view("finance.fees.upload");
     }
 
-    public function storeUpload(Request $request)
-    {
-        //get the current user in session
-        \DB::beginTransaction();
-        try {
 
-            $user = \Auth::user()->id;
-            $valid_exts = array('csv'); // valid extensions
-            $file = $request->file('file');
-            $name = time() . '-' . $file->getClientOriginalName();
-            if (!empty($file)) {
-
-                $ext = strtolower($file->getClientOriginalExtension());
-                $destination = public_path() . '\uploads\fees';
-                if (in_array($ext, $valid_exts)) {
-                    // Moves file to folder on server
-                    // $file->move($destination, $name);
-                    if (@$file->move($destination, $name)) {
-
-
-                        $handle = fopen($destination . "/" . $name, "r");
-                        //  print_r($handle);
-                        while (($data = fgetcsv($handle, 1000, ",")) !== FALSE) {
-
-                            $num = count($data);
-
-                            for ($c = 0; $c < $num; $c++) {
-                                $col[$c] = $data[$c];
-                            }
-
-
-                            $name = $col[0];
-                            $description = $col[1];
-                            $amount = $col[2];
-                            $type = $col[3];
-                            $season = $col[4];
-                            $programme = $col[5];
-                            $level = $col[6];
-                            $sem = $col[7];
-                            $year = $col[8];
-                            $nationality = $col[9];
-                            $programs = $this->programmeSearch(); // check if the programmes in the file tally wat is in the db
-                            if (array_search($programme, $programs)) {
-
-
-                                $fee = new FeeModel();
-                                $fee->NAME = $name;
-
-                                $fee->DESCRIPTION = $description;
-                                $fee->AMOUNT = $amount;
-                                $fee->FEE_TYPE = $type;
-                                $fee->SEASON_TYPE = $season;
-                                $fee->PROGRAMME = $programme;
-                                $fee->LEVEL = $level;
-                                $fee->SEMESTER = $sem;
-                                $fee->YEAR = $year;
-                                $fee->NATIONALITY = $nationality;
-                                $fee->CREATED_BY = $user;
-                                if ($fee->save()) {
-                                    \DB::commit();
-                                } else {
-                                    return redirect('/upload_fees')->back()->withErrors("Fee could not be uploaded");
-                                }
-                            } else {
-                                return redirect('/upload_fees')->with("error", " <span style='font-weight:bold;font-size:13px;'>File contain unrecognize programme.please try again!</span> ");
-
-
-                            }
-                        }
-
-                        fclose($handle);
-                        return redirect('/view_fees')->with("success", " <span style='font-weight:bold;font-size:13px;'>Fees  successfully uploaded!</span> ");
-
-                    }
-                } else {
-                    return redirect('/upload_fees')->with("error", " <span style='font-weight:bold;font-size:13px;'>Only csv (comma delimited ) file is accepted!</span> ");
-
-                }
-            } else {
-                return redirect('/upload_fees')->with("error", " <span style='font-weight:bold;font-size:13px;'>Please upload a csv file!</span> ");
-
-            }
-        } catch (\Exception $e) {
-            \DB::rollback();
-        }
-    }
 
     public function convert_number($number)
     {
