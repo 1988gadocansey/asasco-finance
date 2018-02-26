@@ -52,9 +52,13 @@ Route::group(['middleware' => ['web']], function () {
     Route::get('/student/paid', 'FeeController@index');
     Route::get('transactions/ledger', 'FeeController@dailyPayments');
     Route::delete('delete_payment', 'FeeController@destroyPayment');
+    Route::delete('delete_bill', 'FeeController@deleteBill');
 
     Route::get('/upload/bills', 'FeeController@showBillUpload');
     Route::post('/processBillUpload', 'FeeController@processBillUpload');
+    Route::get('/bills', 'FeeController@bills');
+    Route::get('/print/bill/single', 'FeeController@singleBillPrint');
+    Route::post('process_printSingleBill', 'FeeController@processSingleBillPrint');
 
 //
 

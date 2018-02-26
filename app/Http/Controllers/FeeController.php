@@ -207,6 +207,60 @@ class FeeController extends Controller
     }
 
 
+    public function bills(Request $request, SystemController $sys){
+        $array = $sys->getSemYear();
+        $sem = $array[0]->term;
+        $year = $array[0]->year;
+        $fee = Models\BillModel::query()->where("Item_Status","ACTIVE");
+
+        if ($request->has('program') && trim($request->input('program')) != "") {
+            $fee->where("Academic_Programme", $request->input("program", ""));
+        }
+        if ($request->has('class') && trim($request->input('class')) != "") {
+            $fee->where("Class", $request->input("class", ""));
+        }
+
+        if ($request->has('year') && trim($request->input('year')) != "") {
+            $fee->where("Academic_Year", "=", $request->input("year", ""));
+        }
+        if ($request->has('term') && trim($request->input('term')) != "") {
+            $fee->where("Academic_Term", "=", $request->input("term", ""));
+        }
+
+
+        if ($request->has('residence') && trim($request->input('residence'))!="") {
+            $fee->where("Residence", "=", $request->input('residence'));
+        }
+
+
+
+        $data = $fee->orderBy('Last_Modified_Date', 'DESC')->paginate(100);
+
+        $request->flashExcept("_token");
+
+
+
+        foreach ($data as $key => $row) {
+
+            $t[] = $row->Debit_Amount;
+            $data[$key]->TOTALS = @array_sum($t);
+        }
+
+        $totals = @$sys->formatMoney($data[$key]->TOTALS);
+        return view('finance.fees.bills')->with("data", $data)
+            ->with('program', $sys->getProgramList())
+            ->with('year', $this->years())
+
+
+            ->with('total', $totals)
+
+            ->with('class', $sys->getClassList())
+
+            ;
+
+    }
+
+
     public function sendFeeSMS(Request $request)
     {
         $message = $request->input("message", "");
@@ -283,6 +337,8 @@ class FeeController extends Controller
                              ,
                             'Bill_No'=>$bill,
                             'Bill_Type'=>$value->bill_type,
+                            'Residence'=>$value->residence,
+                            'Gender'=>$value->gender,
                             'Item_Code'=>$value->bill_category,
                             'Academic_Year'=>$year,
                             'Academic_Term'=>$sem
@@ -372,7 +428,57 @@ class FeeController extends Controller
     {
         return view('finance.fees.payfee');
     }
+    public function singleBillPrint(){
+        return view('finance.fees.singleBillSearch');
+    }
+    public function processSingleBillPrint(Request $request, SystemController $sys){
+        $student = explode(',', $request->input('q'));
+        $student = $student[0];
 
+        $sql = Models\RegistrationCard::where("Registration_No", $student)->first();
+
+
+        if (count($sql) == 0) {
+
+            return redirect("print/bill/single")->with("error", "<span style='font-weight:bold;font-size:13px;'> $request->input('q') does not exist!</span>");
+        } else {
+
+            $array = $sys->getSemYear();
+            $sem = $array[0]->term;
+            $year = $array[0]->year;
+            $program =  $sql->Academic_Programme;
+            $class =  $sql->Currently_In_Class;
+            $residence =  $sql->Boarder;
+            $name=$sql->Surname." ". $sql->First_Name;
+
+
+                $bills = Models\BillModel::where("Academic_Programme", $program)
+                    ->where("class", $class)
+                    ->where("Academic_Year", $year)
+                    ->where("Academic_Term", $sem)
+                    ->where("Item_Status", "ACTIVE")->get();
+
+                //dd($bills);
+
+
+
+
+
+
+            return view("finance.fees.printSingleBill")->with('data', $sql)->with('year', $year)->with('sem', $sem)
+                ->with("class", $sys->getClassList())
+
+                ->with("bills",$bills)
+                ->with("year",$year)
+                ->with("class",$class)
+                ->with("name",$name)
+                ->with("term",$sem)
+                ->with("residence",$residence)
+                ->with('banks', $this->banks())->with('receipt', $this->getReceipt());
+
+        }
+
+    }
     public function showStudent(Request $request, SystemController $sys)
     {
         $student = explode(',', $request->input('q'));
@@ -842,87 +948,6 @@ class FeeController extends Controller
         }
     }
 
-    public function uploadFeesComponent(Request $request, SystemController $sys)
-    {
-        //get the current user in session
-        if ($request->isMethod("get")) {
-            return view("finance.fees.uploadComponent");
-        } else {
-
-            $array = $sys->getSemYear();
-            $sem = $array[0]->SEMESTER;
-            $year = $array[0]->YEAR;
-            $user = \Auth::user()->id;
-            $valid_exts = array('csv', 'xls', 'xlsx'); // valid extensions
-            $file = $request->file('file');
-            $path = $request->file('file')->getRealPath();
-
-            if (!empty($file)) {
-
-                $ext = strtolower($file->getClientOriginalExtension());
-
-                if (in_array($ext, $valid_exts)) {
-
-                    $data = Excel::load($path, function ($reader) {
-
-                    })->get();
-
-                    foreach ($data as $key => $value) {
-                        $num = count($data);
-
-
-                        $category = $value->group;
-                        $Component = $value->component;
-                        $amount = $value->amount;
-                        $level = $value->year;
-                        $nationality = $value->nationality;
-
-                        $programs = $sys->programmeCategorySearchByCode(); // check if the programmes in the file tally wat is in the db
-                        if (in_array($category, $programs)) {
-
-                            $transaction = Models\ProgrammeModel::where("SLUG", $category)->get();
-                            foreach ($transaction as $key => $row) {
-
-                                $fee = new FeeModel();
-                                $fee->NAME = $Component;
-
-                                $fee->DESCRIPTION = $Component;
-                                $fee->AMOUNT = $amount;
-                                $fee->FEE_TYPE = 'School Fees';
-                                $fee->NATIONALITY = $nationality;
-                                $fee->PROGRAMME = $row->ID;
-                                $fee->LEVEL = $level;
-                                $fee->SEMESTER = $sem;
-                                $fee->YEAR = $year;
-
-                                $fee->CREATED_BY = $user;
-                                if ($fee->save()) {
-                                    \DB::commit();
-                                } else {
-                                    return redirect('/uploadDetailFees')->back()->withErrors("Fee could not be uploaded");
-                                }
-                            }
-                        } else {
-                            return redirect('/uploadDetailFees')->with("error", " <span style='font-weight:bold;font-size:13px;'>File contain unrecognize programme.please try again!</span> ");
-
-
-                        }
-                    }
-
-
-                    return redirect('/view_fees')->with("success", " <span style='font-weight:bold;font-size:13px;'>$num Fees  successfully uploaded!</span> ");
-
-                } else {
-                    return redirect('/uploadDetailFees')->with("error", " <span style='font-weight:bold;font-size:13px;'>Only excel file is accepted!</span> ");
-
-                }
-            } else {
-                return redirect('/uploadDetailFees')->with("error", " <span style='font-weight:bold;font-size:13px;'>Please upload excel file!</span> ");
-
-            }
-
-        }
-    }
 
     public function showUpload()
     {
@@ -1043,12 +1068,7 @@ class FeeController extends Controller
         return $words;
     }
 
-    public function countries()
-    {
 
-        $country = ['Ghanaian' => 'Ghanaian', 'Foriegn' => 'Foriegn'];
-        return $country;
-    }
 
     public function createform()
     {
@@ -1068,179 +1088,7 @@ class FeeController extends Controller
         return $years;
     }
 
-    public function store(Request $request)
-    {
-        \DB::beginTransaction();
-        try {
-            $user = \Auth::user()->id;
-            $this->validate($request, ['name' => 'required', 'amount' => 'required', 'programme' => 'required', 'level' => 'required', 'year' => 'required', 'stype' => 'required']);
-            if ($request->input('programme') == 'All' && $request->input('level') == 'All') {
-                $program = \DB::table('tpoly_programme')->get();
 
-                // dd($size)   ;          
-
-                foreach ($program as $programs) {
-                    $fee = new FeeModel();
-                    $fee->NAME = $request->input('name');
-
-                    $fee->DESCRIPTION = $request->input('description');
-                    $fee->AMOUNT = $request->input('amount');
-                    $fee->FEE_TYPE = $request->input('type');
-                    $fee->SEASON_TYPE = $request->input('stype');
-                    $fee->PROGRAMME = $programs->ID;
-                    $fee->LEVEL = $request->input('level');
-                    $fee->SEMESTER = $request->input('semester');
-                    $fee->YEAR = $request->input('year');
-                    $fee->NATIONALITY = $request->input('country');
-                    $name = $request->input('name');
-                    $fee->CREATED_BY = $user;
-                    $fee->save();
-                }
-            } elseif ($request->input('programme') == 'All') {
-                $program = \DB::table('tpoly_programme')->get();
-                foreach ($program as $programs) {
-                    $fee = new FeeModel();
-                    $fee->NAME = $request->input('name');
-
-                    $fee->DESCRIPTION = $request->input('description');
-                    $fee->AMOUNT = $request->input('amount');
-                    $fee->FEE_TYPE = $request->input('type');
-                    $fee->SEASON_TYPE = $request->input('stype');
-                    $fee->PROGRAMME = $programs->ID;
-                    $fee->LEVEL = $request->input('level');
-                    $fee->SEMESTER = $request->input('semester');
-                    $fee->YEAR = $request->input('year');
-                    $fee->NATIONALITY = $request->input('country');
-                    $name = $request->input('name');
-                    $fee->CREATED_BY = $user;
-                    $fee->save();
-                }
-            }
-
-            $fee = new FeeModel();
-            $fee->NAME = $request->input('name');
-
-            $fee->DESCRIPTION = $request->input('description');
-            $fee->AMOUNT = $request->input('amount');
-            $fee->FEE_TYPE = $request->input('type');
-            $fee->SEASON_TYPE = $request->input('stype');
-            $fee->PROGRAMME = $request->input('programme');
-            $fee->LEVEL = $request->input('level');
-            $fee->SEMESTER = $request->input('semester');
-            $fee->YEAR = $request->input('year');
-            $fee->NATIONALITY = $request->input('country');
-            $name = $request->input('name');
-            $fee->CREATED_BY = $user;
-
-            if ($fee->save()) {
-                \DB::commit();
-                return redirect()->back()->with("success", array(" <span style='font-weight:bold;font-size:13px;'> $name fee  successfully added!</span> "));
-            } else {
-                return redirect()->back()->withErrors("Fee could not be added");
-            }
-        } catch (\Exception $e) {
-            \DB::rollback();
-        }
-    }
-
-    public function uploadStudentsFee(Request $request, SystemController $sys)
-    {
-        set_time_limit(36000);
-
-        \DB::beginTransaction();
-        try {
-            $user = \Auth::user()->id;
-            $valid_exts = array('csv'); // valid extensions
-            $file = $request->file('file');
-            $name = time() . '-' . $file->getClientOriginalName();
-            if (!empty($file)) {
-
-                $ext = strtolower($file->getClientOriginalExtension());
-                $destination = public_path() . '\uploads\fees';
-                if (in_array($ext, $valid_exts)) {
-                    // Moves file to folder on server
-                    // $file->move($destination, $name);
-                    if (@$file->move($destination, $name)) {
-
-
-                        $handle = fopen($destination . "/" . $name, "r");
-                        //  print_r($handle);
-                        while (($data = fgetcsv($handle, 1000, ",")) !== FALSE) {
-
-                            $num = count($data);
-
-                            for ($c = 0; $c < $num; $c++) {
-                                $col[$c] = $data[$c];
-                            }
-
-
-                            $program = trim($col[0]);
-                            $year = $col[2];
-                            $bill = trim($col[3]);
-                            $owing = trim($col[3]);
-
-
-                            //  dd($year);
-                            // first check if the students exist in the system if true then update else insert
-                            $programme = $sys->programmeSearchByCode(); // check if the programmes in the file tally wat is in the db
-                            if (array_search($program, $programme)) {
-
-
-                                StudentModel::where('PROGRAMMECODE', $program)->where('year', $year)->update(array("SYSUPDATE" => "1", "STATUS" => 'In School', "BILLS" => $bill, "BILL_OWING" => $owing));
-                                \DB::commit();
-
-
-                            } else {
-                                return redirect('/upload_fees')->with("error", " <span style='font-weight:bold;font-size:13px;'>File contain unrecognize programme.please try again!</span> ");
-
-                            }
-
-                        }
-
-
-                        fclose($handle);
-                        return redirect('/students')->with("success", " <span style='font-weight:bold;font-size:13px;'>Fees uploaded  successfully!</span> ");
-
-                    }
-                } else {
-                    return redirect('/upload_fees')->with("error", " <span style='font-weight:bold;font-size:13px;'>Only csv (comma delimited ) file is accepted!</span> ");
-
-                }
-            } else {
-                return redirect('/upload_fees')->with("error", " <span style='font-weight:bold;font-size:13px;'>Please upload a csv file!</span> ");
-
-            }
-        } catch (\Exception $e) {
-            \DB::rollback();
-        }
-
-    }
-
-    /**
-     * Destroy the given task.
-     *
-     * @param  Request $request
-     * @param  Task $task
-     * @return Response
-     */
-    public function destroy(Request $request)
-    {
-        \DB::beginTransaction();
-        try {
-
-            $query = FeeModel::where('ID', $request->input("id"))->delete();
-
-            if ($query) {
-                \DB::commit();
-                //\Session::flash("success", "<span style='font-weight:bold;font-size:13px;'> Fee  </span>successfully deleted!");
-
-                return redirect()->back()->with("success", " <span style='font-weight:bold;font-size:13px;'>   successfully delete!</span> ");
-
-            }
-        } catch (\Exception $e) {
-            \DB::rollback();
-        }
-    }
 
     public function destroyPayment(Request $request)
     {
@@ -1261,6 +1109,25 @@ class FeeController extends Controller
                 }
 
                 return redirect()->back()->with("success", " <span style='font-weight:bold;font-size:13px;'> Payment for student with index number $studentIndexNo amounting GHC $amount successfully deleted!</span> ");
+            }
+        } catch (\Exception $e) {
+            \DB::rollback();
+        }
+    }
+
+    public function deleteBill(Request $request)
+    {
+        \DB::beginTransaction();
+        try {
+
+            $query = Models\BillModel::where('id', $request->input("id"))->delete();
+
+            if ($query) {
+
+                    \DB::commit();
+
+
+                return redirect()->back()->with("success", " <span style='font-weight:bold;font-size:13px;'>  Bill item successfully deleted!</span> ");
             }
         } catch (\Exception $e) {
             \DB::rollback();

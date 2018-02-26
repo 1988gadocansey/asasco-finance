@@ -217,6 +217,7 @@
 
                             <li><a href='{!! url("/transactions/ledger") !!}'>View daily payments</a></li>
                             <li><a href='{!! url("/bills") !!}'>View Bills</a></li>
+                            <li><a href='{!! url("/print/bill/single") !!}'>Print Bill</a></li>
 
                          </ul>
                     </div>
