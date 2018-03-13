@@ -53,7 +53,7 @@
                                           
                                              {!! Form::select('class', $class, old("class",""), ['class' => 'md-input parents' ,'placeholder' => 'Select class']);!!}
 
-                                            <p class="uk-text-danger uk-text-small"  v-if="applicationForm.level.$error.required" >Level is required</p>
+                                            <p class="uk-text-danger uk-text-small"  v-if="applicationForm.level.$error.required" >year is required</p>
 
                                         </td>
                                         </tr>
@@ -82,15 +82,7 @@
                                             
                                         </td>
                                         </tr>
-                                  {{--  <tr>
-                                        <td  align=""> <div  align="right" class=" ">Fees Type</div></td>
-                                        <td>
 
-                                            {!!   Form::select('type', ['All' => 'Total Fees','Academic'=>'Academic Facility User Fees', 'PTA' => 'PTA','Boarding' => 'Boarding' ], null, ['class' => 'md-input ','required'=>'','id'=>"type",'v-model'=>'type','v-form-ctrl'=>'','v-select'=>'','placeholder' => 'select fee type']);!!}
-                                            <p class="uk-text-danger uk-text-small"  v-if="applicationForm.type.$error.required" >Fee type  is required</p>
-
-                                        </td>
-                                    </tr>--}}
                                          <tr>
                                             <td  align=""> <div  align="right" >Date of Payment at bank</div></td>
                                         <td>
@@ -117,20 +109,23 @@
                                         </tr>
 
                                         <tr>
-                                            <td  align=""> <div  align="right" class=" ">Payment Mode</div></td>
+                                            <td  align=""> <div  align="right" class=" ">Payment Mode</div>
+                                            </td>
                                         <td>
-                                            <select name="type" required="" class="md-input" v-form-ctrl='' v-model='payment_detail' v-select=''>
-                                                <option>Select payment type</option>
+                                            <select name="type" required="" class="md-input" v-form-ctrl='' v-model='type' v-select=''>
+                                                <option value="">Select payment type</option>
                                                 <option value="Cash">Cash</option>
 
                                                 <option value="Direct-Pay In">Direct-Pay In</option>
                                                 <option value="Banker's Draft">Banker's Draft</option>
                                                 <option value="Cheque">Cheque</option>
                                             </select>
-                                             <p class="uk-text-danger uk-text-small"  v-if="applicationForm.payment_detail.$error.required" >Payment type is required</p>
+                                             <p class="uk-text-danger uk-text-small"  v-if="applicationForm.type.$error.required" >Payment type is required</p>
 
                                             
                                         </td>
+
+
                                         </tr>
                                     </table>
                                 <p></p>

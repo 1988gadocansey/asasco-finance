@@ -122,7 +122,7 @@
                         <tr>
                             <th class="filter-false remove sorter-false" data-priority="6">NO</th>
 
-                            <th>BILL NO./th>
+                            <th>BILL NO</th>
 
                             <th data-priority="critical">BILL CODE</th>
                             <th>BILL DESCRIPTION</th>

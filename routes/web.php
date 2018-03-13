@@ -46,6 +46,7 @@ Route::group(['middleware' => ['web']], function () {
     Route::get('search/autocomplete', 'SearchController@autocomplete');
 
 
+     Route::get('search/class', 'SearchController@autocompleteClass');
 
     Route::get('/student/owing', 'FeeController@owing');
 
@@ -59,6 +60,17 @@ Route::group(['middleware' => ['web']], function () {
     Route::get('/bills', 'FeeController@bills');
     Route::get('/print/bill/single', 'FeeController@singleBillPrint');
     Route::post('process_printSingleBill', 'FeeController@processSingleBillPrint');
+
+    Route::get('/bill/class/bulk/print','FeeController@bulkBillForm');
+    Route::post('/bill/class/bulk/process','FeeController@processBulkBill');
+
+    Route::get('/student/bill/create','FeeController@showSingleBillCreateForm');
+     Route::post('/show/student','FeeController@showStudentInfoBill');
+    Route::post('/process/student/bill','FeeController@processSingleBillCreation');
+
+    Route::get('/class/bill/create','FeeController@showClassInfoBill');
+    Route::post('class/bill/process','FeeController@processClassBillCreation');
+
 
 //
 

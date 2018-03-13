@@ -76,7 +76,7 @@
             <div   class="uk-grid" data-uk-grid-margin>
                 <div class="uk-grid-1-1 uk-container-center">
                     @inject('sys', 'App\Http\Controllers\SystemController')
-                    <?php for ($i = 1; $i <= 1; $i++) {?>
+                    <?php if(!empty($bills)) {?>
 
 
                     <table   border="0">
@@ -146,7 +146,7 @@
 
                             <tr align="">
                                 <td>{{$row->Item_Description}}</td>
-                                <td>{{$row->Debit_Amount}} <?php    $total[]=$row->Debit_Amount;?></td>
+                                <td>{{$row->Debit_Amount}} <?php    $debit[]=$row->Debit_Amount;?></td>
                                 <td>{{$row->Credit_Amount}} <?php    $credit[]=$row->Credit_Amount;?></td>
 
                             </tr>
@@ -154,10 +154,10 @@
                         @endforeach
                         <tr>
                             <td colspan="">TOTAL DEBIT<div style="" class="uk-text-bold uk-text-danger"> </div></td>
-                            <td>{{number_format(array_sum($total),2)}}</td>
+                            <td>{{@number_format(array_sum(@$debit),2)}}</td>
 
                             <td colspan="">TOTAL CREDIT<div style="" class="uk-text-bold uk-text-danger"> </div></td>
-                            <td>{{number_format(array_sum($credit),2)}}</td>
+                            <td>{{@number_format(array_sum(@$credit),2)}}</td>
 
 
                         </tr>
@@ -169,8 +169,7 @@
 
 
 
-                    <?php }
-                    ?>
+
                     <div>
                         <p>Next Term Begins :12th May,<?php echo date("Y");?></p>
                         <p>1.Payments must be made on or before opening of term failure which student will be refused the remittance</p>
@@ -191,6 +190,8 @@
                         </p>
 
                     </div>
+                    <?php }else{echo "<p>No bill set for you contact finance office</p>";}
+                    ?>
                 </div>
 
             </div>

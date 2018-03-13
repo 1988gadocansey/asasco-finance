@@ -211,13 +211,19 @@
                     <a href="#"><i class="sidebar-menu-icon material-icons md-18">work</i><span>Finances</span></a>
                     <div class="uk-dropdown uk-dropdown-scrollable">
                         <ul class="uk-nav uk-nav-dropdown">
-                            <li><a href='{!! url("/pay") !!}'>Pay Fees</a></li>
-                           {{-- <li><a href='{!! url("/student/owing") !!}'>View Students owing</a></li>
-                            <li><a href='{!! url("/student/paid") !!}'>View Students Paid</a></li>--}}
+                           <li><a href='{!! url("/class/bill/create") !!}'>Create bills for Class</a></li>
+                            <li><a href='{!! url("/student/bill/create") !!}'>Create bill for Student</a></li>
 
-                            <li><a href='{!! url("/transactions/ledger") !!}'>View daily payments</a></li>
                             <li><a href='{!! url("/bills") !!}'>View Bills</a></li>
-                            <li><a href='{!! url("/print/bill/single") !!}'>Print Bill</a></li>
+
+                            <li><a href='{!! url("/print/bill/single") !!}'>Print Single Bill</a></li>
+                               <li><a href='{!! url("/bill/class/bulk/print") !!}'>Print Class Bills</a></li>
+                         
+                            <li><a href='{!! url("/pay") !!}'>Pay Fees</a></li>
+                                <li><a href='{!! url("/transactions/ledger") !!}'>View daily payments</a></li>
+                         
+                            
+
 
                          </ul>
                     </div>
@@ -228,6 +234,7 @@
                     <div class="uk-dropdown uk-dropdown-scrollable">
                         <ul class="uk-nav uk-nav-dropdown">
                             <li><a href='{!! url("/upload/bills") !!}'>Upload bills</a></li>
+                            
                             <li><a href='{!! url("/upload/payments") !!}'>Upload Statement from Bank</a></li>
                         </ul>
                     </div>
@@ -259,15 +266,7 @@
                         <div class="uk-width-1-2">
                             <ul class="uk-nav uk-nav-dropdown ">
                                  <li><a href='{!! url("/dashboard") !!}'>Home</a></li>
-                                 <li><a href='{!! url("/biodataUpdate") !!}'>My Profile</a></li>
-                                 <li><a href='{!! url("/course_registration") !!}'>Register Course</a></li>
-                                 <li><a href='{!! url("registeredCourses") !!}'>View Registered Courses</a></li>
-                                   <li><a href='{!! url("/result/transcript/provisonal") !!}'>View Semester Results</a></li>
-                            <li><a href='#'onclick="return alert('coming soon')">Apply for official transcript</a></li>
-                             <li><a href='{!! url("/statement_account") !!}'>Print Statement of accounts</a></li>
-                             <li><a href='#' onclick="return alert('coming soon')">Teaching Timetable</a></li>
-                            <li><a href='#'onclick="return alert('coming soon')">Examination Timetable</a></li>
-            
+
                             </ul>
                         </div>
                     </div>

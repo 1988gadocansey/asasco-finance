@@ -454,6 +454,7 @@ class FeeController extends Controller
 
                 $bills = Models\BillModel::where("Academic_Programme", $program)
                     ->where("class", $class)
+                    ->where("Residence", $residence)
                     ->where("Academic_Year", $year)
                     ->where("Academic_Term", $sem)
                     ->where("Item_Status", "ACTIVE")->get();
@@ -479,6 +480,170 @@ class FeeController extends Controller
         }
 
     }
+    public function bulkBillForm(){
+        return view('finance.fees.bulkBillSearch');
+    }
+    public function processBulkBill(Request $request, SystemController $sys){
+        $data = explode('-', $request->input('q'));
+        $program = $data[0];
+        $class = $data[1];
+
+
+        $sql = Models\RegistrationCard::where("Currently_In_Class", $class)
+        ->where("Academic_Programme",$program)->orderBy("Surname")
+        ->get();
+
+
+        if (count($sql) == 0) {
+
+            return redirect("/bill/class/bulk/print")->with("error", "<span style='font-weight:bold;font-size:13px;'> $request->input('q') does not exist!</span>");
+        } else {
+
+            $array = $sys->getSemYear();
+            $sem = $array[0]->term;
+            $year = $array[0]->year;
+             
+           
+            
+               
+
+                /*$bills= \DB::table("registration_card")->join("students_ledger","registration_card.Registration_No","=","students_ledger.Registration_No")
+                 ->where("registration_card.Academic_Programme",$program)
+                 ->where("registration_card.Currently_In_Class", $class)
+                  ->where("students_ledger.Academic_Year", $year)
+                    ->where("students_ledger.Academic_Term", $sem)
+                    ->where("students_ledger.Item_Status", "ACTIVE")->get();*/
+ 
+            return view("finance.fees.printBulkBill")->with('year', $year)->with('sem', $sem)
+                 
+                
+                ->with("year",$year)
+                ->with("class",$class)
+                ->with("program",$program)
+                 ->with("students",$sql)
+                ->with("term",$sem)
+                
+                ;
+
+        }
+ 
+
+    }
+    public function showSingleBillCreateForm(){
+        return view('finance.fees.createSingleBill');
+    }
+
+    public function showStudentInfoBill(Request $request, SystemController $sys)
+    {
+        $student = explode(',', $request->input('q'));
+        $student = $student[0];
+
+        $sql = Models\RegistrationCard::where("Registration_No", $student)->get();
+
+
+        if (count($sql) == 0) {
+
+            return redirect("/student/bill/create")->with("error", "<span style='font-weight:bold;font-size:13px;'> $request->input('q') does not exist!</span>");
+        } else {
+             $array = $sys->getSemYear();
+            $sem = $array[0]->term;
+            $year = $array[0]->year;
+
+            $bills = Models\PaymentTransactions::where("Registration_No", $student)->where("Academic_Year",$year)
+                ->where("Academic_Term",$sem)->where("Transaction_Type","BILLING")
+                ->where("Item_Status","ACTIVE")->sum("Debit_Amount");
+
+
+            $paid = Models\PaymentTransactions::where("Registration_No", $student)->where("Academic_Year",$year)
+                ->where("Academic_Term",$sem)->where("Transaction_Type","PAYMENT")
+                ->where("Item_Status","ACTIVE")->sum("Credit_Amount");
+
+            $item = \DB::table('bill_items')->orderBy("Item_Code" )->orderBy("Item_Description")
+                ->pluck('Item_Description', 'Item_Description');
+         
+             
+             
+
+            return view("finance.fees.processIndividualBillCreation")->with('data', $sql)->with('year', $sys->years())
+                 ->with("paid",$paid)
+                 ->with("item",$item)
+                ->with("bills",$bills);
+
+        }
+
+    }
+
+    public function processSingleBillCreation(Request $request, SystemController $sys)
+    {
+         $user=\Auth::user()->fund;
+
+                        $bill=date("Y").str_pad(mt_rand(1,999),3,'0',STR_PAD_LEFT);
+
+                        $insert[] = ['Class'=> $request->class,  'Academic_Programme'=>$request->programme,'Debit_Amount'=>$request->amount,'Item_Description'=>$request->description,'Created_By'=>$user
+                             ,
+                            "Bill_No"=>$bill,
+                            "Bill_Type"=>"Additional Bill",
+                             
+                             "student"=>$request->student,
+                            "Item_Code"=>$request->code,
+                            "Academic_Year"=>$request->year,
+                            "Academic_Term"=>$request->term
+
+                        ];
+
+                    
+
+                    // dd($insert);
+                    if(!empty($insert)){
+
+                        \DB::table('bill_history')->insert($insert);
+
+                        return redirect('/bills')->with("success",  " <span style='font-weight:bold;font-size:13px;'>Bills  successfully uploaded!</span> " );
+
+
+                    }
+    }
+
+
+
+    public function showClassInfoBill(Request $request, SystemController $sys)
+    {
+           
+             
+             $item = \DB::table('bill_items')->orderBy("Item_Code" )->orderBy("Item_Description")
+                ->pluck('Item_Description', 'Item_Description');
+         
+            
+            return view("finance.fees.classBillCreate")->with('year', $sys->years())
+                 ->with("program",$sys->getProgramList())
+                 ->with("item",$item)
+                ->with("class",$sys->getClassList());
+
+         
+
+    }
+
+    public function processClassBillCreation(Request $request, SystemController $sys){
+
+
+    }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
     public function showStudent(Request $request, SystemController $sys)
     {
         $student = explode(',', $request->input('q'));

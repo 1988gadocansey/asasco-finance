@@ -35,12 +35,36 @@ class SearchController extends Controller
             ->take(500)->get();
         foreach ($queries as $query) {
 
-                $results[] = ['id' => $query->id, 'value' => $query->Registration_No . ',' . $query->Surname. ' ' . $query->First_Name];
+                $results[] = ['id' => $query->id, 'value' => $query->Registration_No . ',' . $query->Surname. ' ' . $query->First_Name. ',' . $query->Academic_Programme . ' ' . $query->Currently_In_Class];
 
         }
         return Response::json($results);
 
 
     }
+     public function autocompleteClass(){
+    $term = Input::get('term');
+    
+    $results = array();
+    
+     
+    $queries = DB::table('registration_card')
+                ->where('Currently_In_Class','LIKE', '%'.$term.'%')
+                ->orWhere('Academic_Programme','LIKE', '%'.$term.'%')
+                ->groupBy('Academic_Programme')
+                 ->groupBy('Currently_In_Class')
+                 
+                
+        ->take(500)->get();
+    
+    foreach ($queries as $query)
+    {
+         
+         
+        $results[] = [ 'id' => $query->Academic_Programme.$query->Currently_In_Class, 'value' =>$query->Academic_Programme.'-'.$query->Currently_In_Class ];
+     
+    }
+return Response::json($results);
+}
 
 } 
