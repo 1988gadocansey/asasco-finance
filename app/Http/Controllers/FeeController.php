@@ -625,7 +625,33 @@ class FeeController extends Controller
 
     public function processClassBillCreation(Request $request, SystemController $sys){
 
+        $user=\Auth::user()->fund;
 
+        $bill=date("Y").str_pad(mt_rand(1,999),3,'0',STR_PAD_LEFT);
+
+        $insert[] = ['Class'=> $request->class,  'Academic_Programme'=>$request->programme,'Debit_Amount'=>$request->amount,'Item_Description'=>$request->description,'Created_By'=>$user
+            ,
+            "Bill_No"=>$bill,
+            "Bill_Type"=>"Additional Bill",
+
+
+            "Item_Code"=>$request->code,
+            "Academic_Year"=>$request->year,
+            "Academic_Term"=>$request->term
+
+        ];
+
+
+
+        // dd($insert);
+        if(!empty($insert)){
+
+            \DB::table('bill_history')->insert($insert);
+
+            return redirect('/bills')->with("success",  " <span style='font-weight:bold;font-size:13px;'>Bills  successfully created!</span> " );
+
+
+        }
     }
 
 
